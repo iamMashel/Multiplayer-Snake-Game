@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - staging
 
 jobs:
   test:
@@ -80,7 +81,7 @@ jobs:
     name: Deploy to Render
     needs: [test, integration-test]
     runs-on: ubuntu-latest
-    if: success() && github.ref == 'refs/heads/main'
+    if: success() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
     steps:
       - name: Trigger Render Deployment
         run: |
