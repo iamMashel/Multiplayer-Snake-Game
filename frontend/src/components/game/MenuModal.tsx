@@ -43,7 +43,6 @@ export function MenuModal({
               <Button
                 variant={currentMode === 'pass-through' ? 'default' : 'outline'}
                 onClick={() => onModeChange('pass-through')}
-                disabled={gameStatus === 'playing'}
                 className={cn("h-auto py-3 flex flex-col items-center gap-1", currentMode === 'pass-through' && "neon-box")}
               >
                 <div className="font-bold">Pass Through</div>
@@ -52,7 +51,6 @@ export function MenuModal({
               <Button
                 variant={currentMode === 'walls' ? 'default' : 'outline'}
                 onClick={() => onModeChange('walls')}
-                disabled={gameStatus === 'playing'}
                 className={cn("h-auto py-3 flex flex-col items-center gap-1", currentMode === 'walls' && "neon-box")}
               >
                 <div className="font-bold">Walls</div>

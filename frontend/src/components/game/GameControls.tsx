@@ -23,16 +23,16 @@ export function GameControls({
   const { status } = gameState;
 
   return (
-    <div className="space-y-4">
-      {/* Game Action Buttons */}
-      <div className="space-y-2">
+    <div className="space-y-2">
+      {/* Game Action Buttons - Compact Row */}
+      <div className="flex gap-2 justify-center">
         {status === 'idle' && (
           <Button
             onClick={onStart}
-            className="w-full font-display arcade-button neon-box h-12 text-lg"
-            size="lg"
+            className="flex-1 font-display arcade-button neon-box h-10 text-base"
+            size="sm"
           >
-            <Play className="w-5 h-5 mr-2" />
+            <Play className="w-4 h-4 mr-2" />
             START
           </Button>
         )}
@@ -41,20 +41,20 @@ export function GameControls({
           <Button
             onClick={onPause}
             variant="secondary"
-            className="w-full font-display arcade-button neon-box-secondary h-12 text-lg"
-            size="lg"
+            className="flex-1 font-display arcade-button neon-box-secondary h-10 text-base"
+            size="sm"
           >
-            <Pause className="w-5 h-5 mr-2" />
+            <Pause className="w-4 h-4 mr-2" />
             PAUSE
           </Button>
         )}
 
         {status === 'paused' && (
-          <div className="flex gap-2">
+          <>
             <Button
               onClick={onResume}
-              className="flex-1 font-display arcade-button neon-box h-12"
-              size="lg"
+              className="flex-1 font-display arcade-button neon-box h-10"
+              size="sm"
             >
               <Play className="w-4 h-4 mr-2" />
               RESUME
@@ -62,38 +62,38 @@ export function GameControls({
             <Button
               onClick={onReset}
               variant="outline"
-              className="px-4 border-destructive text-destructive hover:bg-destructive/10 h-12"
+              className="px-4 border-destructive text-destructive hover:bg-destructive/10 h-10"
             >
               <RotateCcw className="w-4 h-4" />
             </Button>
-          </div>
+          </>
         )}
 
         {status === 'game-over' && (
           <Button
             onClick={onReset}
             variant="outline"
-            className="w-full font-display h-12 text-lg neon-box-primary bg-primary/20 hover:bg-primary/30 text-primary border-primary"
-            size="lg"
+            className="flex-1 font-display h-10 text-base neon-box-primary bg-primary/20 hover:bg-primary/30 text-primary border-primary"
+            size="sm"
           >
-            <RotateCcw className="w-5 h-5 mr-2" />
+            <RotateCcw className="w-4 h-4 mr-2" />
             PLAY AGAIN
           </Button>
         )}
       </div>
 
-      {/* Mobile D-Pad Controls */}
-      <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-border/50 shadow-xl md:hidden">
-        <div className="grid grid-cols-3 gap-2 max-w-[200px] mx-auto">
+      {/* Mobile D-Pad Controls - Larger & Centered */}
+      <div className="bg-card/50 backdrop-blur-sm rounded-xl p-2 border border-border/50 shadow-xl md:hidden">
+        <div className="grid grid-cols-3 gap-3 max-w-[240px] mx-auto">
           <div />
           <Button
             variant="outline"
             size="icon"
             onClick={() => onDirectionChange('UP')}
             disabled={status !== 'playing'}
-            className="aspect-square h-14 w-14 rounded-full bg-background/50 border-primary/30 active:scale-95 transition-transform"
+            className="aspect-square h-16 w-16 rounded-2xl bg-background/50 border-primary/30 active:scale-95 transition-transform active:bg-primary/20"
           >
-            <ArrowUp className="w-6 h-6" />
+            <ArrowUp className="w-8 h-8" />
           </Button>
           <div />
 
@@ -102,32 +102,28 @@ export function GameControls({
             size="icon"
             onClick={() => onDirectionChange('LEFT')}
             disabled={status !== 'playing'}
-            className="aspect-square h-14 w-14 rounded-full bg-background/50 border-primary/30 active:scale-95 transition-transform"
+            className="aspect-square h-16 w-16 rounded-2xl bg-background/50 border-primary/30 active:scale-95 transition-transform active:bg-primary/20"
           >
-            <ArrowLeft className="w-6 h-6" />
+            <ArrowLeft className="w-8 h-8" />
           </Button>
-          <div />
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onDirectionChange('RIGHT')}
-            disabled={status !== 'playing'}
-            className="aspect-square h-14 w-14 rounded-full bg-background/50 border-primary/30 active:scale-95 transition-transform"
-          >
-            <ArrowRight className="w-6 h-6" />
-          </Button>
-
-          <div />
           <Button
             variant="outline"
             size="icon"
             onClick={() => onDirectionChange('DOWN')}
             disabled={status !== 'playing'}
-            className="aspect-square h-14 w-14 rounded-full bg-background/50 border-primary/30 active:scale-95 transition-transform"
+            className="aspect-square h-16 w-16 rounded-2xl bg-background/50 border-primary/30 active:scale-95 transition-transform active:bg-primary/20"
           >
-            <ArrowDown className="w-6 h-6" />
+            <ArrowDown className="w-8 h-8" />
           </Button>
-          <div />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => onDirectionChange('RIGHT')}
+            disabled={status !== 'playing'}
+            className="aspect-square h-16 w-16 rounded-2xl bg-background/50 border-primary/30 active:scale-95 transition-transform active:bg-primary/20"
+          >
+            <ArrowRight className="w-8 h-8" />
+          </Button>
         </div>
       </div>
     </div>

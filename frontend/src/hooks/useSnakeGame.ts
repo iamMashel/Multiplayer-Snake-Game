@@ -107,9 +107,20 @@ export function useSnakeGame(initialMode: GameMode = 'pass-through'): UseSnakeGa
     };
   }, [gameState.status, gameState.speed, processDirectionQueue]);
 
+  // Reset game when user changes (new login/logout)
+  useEffect(() => {
+    setGameState(createInitialState(initialMode));
+    directionQueueRef.current = [];
+  }, [user?.username]); // Use username as trigger
+
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Prevent game controls when typing in inputs
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
       if (gameState.status !== 'playing') return;
 
       const keyToDirection: Record<string, Direction> = {
