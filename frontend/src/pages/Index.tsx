@@ -35,8 +35,8 @@ function GamePage() {
         {activeTab === 'play' && (
           <div className="h-full flex flex-col items-center pt-2 gap-2">
 
-            {/* Game Controls & Info Header */}
-            <div className="w-full max-w-[500px] relative z-10 shrink-0">
+            {/* Game Controls & Info Header - Now Relative */}
+            <div className="w-full max-w-[500px] shrink-0">
               <GameOverlay
                 score={game.finalScore}
                 mode={game.gameState.mode}
