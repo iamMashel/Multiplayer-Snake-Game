@@ -2,7 +2,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import type { GameState, GameMode, Direction } from '@/types';
 import { Play, Pause, RotateCcw, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface GameControlsProps {
   gameState: GameState;
@@ -10,9 +9,7 @@ interface GameControlsProps {
   onPause: () => void;
   onResume: () => void;
   onReset: () => void;
-  onModeChange: (mode: GameMode) => void;
   onDirectionChange: (direction: Direction) => void;
-  finalScore: number;
 }
 
 export function GameControls({
@@ -21,71 +18,22 @@ export function GameControls({
   onPause,
   onResume,
   onReset,
-  onModeChange,
   onDirectionChange,
-  finalScore,
 }: GameControlsProps) {
-  const { status, mode, score } = gameState;
+  const { status } = gameState;
 
   return (
     <div className="space-y-4">
-      {/* Score Display */}
-      <div className="bg-card rounded-lg p-4 neon-box-secondary">
-        <div className="text-center">
-          <p className="text-muted-foreground text-sm uppercase tracking-wider mb-1">Score</p>
-          <p className="font-display text-4xl text-secondary text-glow-secondary tabular-nums">{String(score)}</p>
-          {mode === 'walls' && (
-            <p className="text-xs text-muted-foreground mt-1">1.5x multiplier active</p>
-          )}
-        </div>
-      </div>
-
-      {/* Mode Selection */}
-      <div className="bg-card rounded-lg p-4 border border-border">
-        <p className="text-sm text-muted-foreground mb-3 font-medium">Game Mode</p>
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            variant={mode === 'pass-through' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => onModeChange('pass-through')}
-            disabled={status === 'playing'}
-            className={cn(
-              "font-display text-xs",
-              mode === 'pass-through' && "neon-box"
-            )}
-          >
-            Pass Through
-          </Button>
-          <Button
-            variant={mode === 'walls' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => onModeChange('walls')}
-            disabled={status === 'playing'}
-            className={cn(
-              "font-display text-xs",
-              mode === 'walls' && "neon-box"
-            )}
-          >
-            Walls
-          </Button>
-        </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          {mode === 'pass-through'
-            ? 'Snake wraps around edges'
-            : 'Hit a wall = Game Over (1.5x score)'}
-        </p>
-      </div>
-
-      {/* Game Controls */}
+      {/* Game Action Buttons */}
       <div className="space-y-2">
         {status === 'idle' && (
           <Button
             onClick={onStart}
-            className="w-full font-display arcade-button neon-box"
+            className="w-full font-display arcade-button neon-box h-12 text-lg"
             size="lg"
           >
             <Play className="w-5 h-5 mr-2" />
-            Start Game
+            START
           </Button>
         )}
 
@@ -93,50 +41,59 @@ export function GameControls({
           <Button
             onClick={onPause}
             variant="secondary"
-            className="w-full font-display arcade-button neon-box-secondary"
+            className="w-full font-display arcade-button neon-box-secondary h-12 text-lg"
             size="lg"
           >
             <Pause className="w-5 h-5 mr-2" />
-            Pause
+            PAUSE
           </Button>
         )}
 
         {status === 'paused' && (
-          <Button
-            onClick={onResume}
-            className="w-full font-display arcade-button neon-box"
-            size="lg"
-          >
-            <Play className="w-5 h-5 mr-2" />
-            Resume
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={onResume}
+              className="flex-1 font-display arcade-button neon-box h-12"
+              size="lg"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              RESUME
+            </Button>
+            <Button
+              onClick={onReset}
+              variant="outline"
+              className="px-4 border-destructive text-destructive hover:bg-destructive/10 h-12"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </Button>
+          </div>
         )}
 
-        {(status === 'game-over' || status === 'paused') && (
+        {status === 'game-over' && (
           <Button
             onClick={onReset}
             variant="outline"
-            className="w-full font-display"
+            className="w-full font-display h-12 text-lg neon-box-primary bg-primary/20 hover:bg-primary/30 text-primary border-primary"
+            size="lg"
           >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            New Game
+            <RotateCcw className="w-5 h-5 mr-2" />
+            PLAY AGAIN
           </Button>
         )}
       </div>
 
       {/* Mobile D-Pad Controls */}
-      <div className="bg-card rounded-lg p-4 border border-border md:hidden">
-        <p className="text-sm text-muted-foreground mb-3 text-center">Touch Controls</p>
-        <div className="grid grid-cols-3 gap-2 max-w-[180px] mx-auto">
+      <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-border/50 shadow-xl md:hidden">
+        <div className="grid grid-cols-3 gap-2 max-w-[200px] mx-auto">
           <div />
           <Button
             variant="outline"
             size="icon"
             onClick={() => onDirectionChange('UP')}
             disabled={status !== 'playing'}
-            className="aspect-square"
+            className="aspect-square h-14 w-14 rounded-full bg-background/50 border-primary/30 active:scale-95 transition-transform"
           >
-            <ArrowUp className="w-5 h-5" />
+            <ArrowUp className="w-6 h-6" />
           </Button>
           <div />
 
@@ -145,9 +102,9 @@ export function GameControls({
             size="icon"
             onClick={() => onDirectionChange('LEFT')}
             disabled={status !== 'playing'}
-            className="aspect-square"
+            className="aspect-square h-14 w-14 rounded-full bg-background/50 border-primary/30 active:scale-95 transition-transform"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-6 h-6" />
           </Button>
           <div />
           <Button
@@ -155,9 +112,9 @@ export function GameControls({
             size="icon"
             onClick={() => onDirectionChange('RIGHT')}
             disabled={status !== 'playing'}
-            className="aspect-square"
+            className="aspect-square h-14 w-14 rounded-full bg-background/50 border-primary/30 active:scale-95 transition-transform"
           >
-            <ArrowRight className="w-5 h-5" />
+            <ArrowRight className="w-6 h-6" />
           </Button>
 
           <div />
@@ -166,20 +123,14 @@ export function GameControls({
             size="icon"
             onClick={() => onDirectionChange('DOWN')}
             disabled={status !== 'playing'}
-            className="aspect-square"
+            className="aspect-square h-14 w-14 rounded-full bg-background/50 border-primary/30 active:scale-95 transition-transform"
           >
-            <ArrowDown className="w-5 h-5" />
+            <ArrowDown className="w-6 h-6" />
           </Button>
           <div />
         </div>
       </div>
-
-      {/* Keyboard hints */}
-      <div className="hidden md:block text-center text-xs text-muted-foreground space-y-1">
-        <p className="font-medium">Controls:</p>
-        <p>Arrow Keys or WASD to move</p>
-        <p>Space to pause • R to restart</p>
-      </div>
     </div>
   );
 }
+
