@@ -31,12 +31,12 @@ function GamePage() {
         onAuthRequest={() => setAuthOpen(true)}
       />
 
-      <main className="flex-1 flex flex-col min-h-0 container mx-auto px-2 pb-safe">
+      <main className="flex-1 flex flex-col min-h-0 container mx-auto px-2 pb-safe justify-center items-center">
         {activeTab === 'play' && (
-          <div className="h-full flex flex-col items-center pt-2 gap-2">
+          <div className="w-full max-w-[500px] flex flex-col items-center gap-0 max-h-full justify-center">
 
             {/* Game Controls & Info Header */}
-            <div className="w-full max-w-[500px] relative z-10 shrink-0">
+            <div className="w-full shrink-0 z-10">
               <GameOverlay
                 score={game.finalScore}
                 mode={game.gameState.mode}
@@ -44,15 +44,13 @@ function GamePage() {
               />
             </div>
 
-            {/* Game Area Container - Dynamic Fitting */}
-            <div className="flex-1 min-h-0 w-full flex items-center justify-center py-2">
-              <div className="aspect-square h-full max-h-full max-w-full shadow-2xl rounded-xl overflow-hidden border border-primary/20 bg-card/10 backdrop-blur-sm relative">
-                <GameBoard gameState={game.gameState} finalScore={game.finalScore} />
-              </div>
+            {/* Game Area Container - Hugs content */}
+            <div className="w-full aspect-square shrink shadow-2xl rounded-xl overflow-hidden border border-primary/20 bg-card/10 backdrop-blur-sm relative min-h-0">
+              <GameBoard gameState={game.gameState} finalScore={game.finalScore} />
             </div>
 
             {/* Controls Area */}
-            <div className="w-full max-w-[400px] shrink-0 relative z-10 pb-2">
+            <div className="w-full shrink-0 relative z-10 pt-2 pb-2">
               <GameControls
                 gameState={game.gameState}
                 onStart={game.startGame}
