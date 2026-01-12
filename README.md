@@ -1,6 +1,9 @@
 # Vibe Coding Snake Game
 
 A modern Snake game with a retro aesthetic, featuring multiplayer spectator mode, leaderboards, and game persistence.
+<img width="1549" height="782" alt="image" src="https://github.com/user-attachments/assets/4175166b-6ea3-4207-acb9-60ebab8c84c8" />
+
+![Uploading image.png…]()
 
 ## Tech Stack
 
