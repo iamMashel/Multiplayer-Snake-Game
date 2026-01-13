@@ -1,0 +1,97 @@
+---
+- name: Deploy Snake Game
+  hosts: webserver
+  become: yes
+  vars:
+    project_root: /opt/vibe-coding-snake
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+          - git
+          - rsync
+        state: present
+
+    - name: Add Docker GPG apt Key
+      mkdir:
+        path: /etc/apt/keyrings
+        mode: '0755'
+        state: directory
+      register: keyrings_dir
+
+    - name: Download Docker's official GPG key
+      get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: a+r
+
+    - name: Add Docker Repository
+      shell: |
+        echo \
+          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+          $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+          tee /etc/apt/sources.list.d/docker.list > /dev/null
+      args:
+        creates: /etc/apt/sources.list.d/docker.list
+
+    - name: Update apt cache again
+      apt:
+        update_cache: yes
+
+    - name: Install Docker components
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Ensure Docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Create project directory
+      file:
+        path: "{{ project_root }}"
+        state: directory
+        mode: '0755'
+        owner: ubuntu
+        group: ubuntu
+
+    - name: Sync project files
+      synchronize:
+        src: ../../
+        dest: "{{ project_root }}"
+        rsync_opts:
+          - "--exclude=.git"
+          - "--exclude=.github"
+          - "--exclude=node_modules"
+          - "--exclude=__pycache__"
+          - "--exclude=.venv"
+          - "--exclude=devops"
+          - "--exclude=postgres_data"
+          - "--exclude=.env" # Exclude .env for security, create it manually or via vars if needed, but for now strict
+      become: no # Run as the SSH user (ubuntu) to facilitate rsync unless necessary
+
+    # Note: If .env is needed, we should template it here. 
+    # For now, docker-compose.yml has environment variables hardcoded or uses default behavior.
+    # The current docker-compose.yml in the repo has hardcoded standard passwords which is fine for this demo.
+
+    - name: Run Docker Compose
+      command: docker compose up -d --build
+      args:
+        chdir: "{{ project_root }}"
+      # become: yes (default)
