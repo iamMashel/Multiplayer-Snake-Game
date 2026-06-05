@@ -54,7 +54,7 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started · ⏭️ deferred
 **1D. Product hygiene**
 - ✅ Analytics: **Cloudflare Web Analytics** LIVE (`src/lib/analytics.ts`) — free/unlimited/no-cookies, prod-only, skips localhost. Beacon token wired into `CF_BEACON_TOKEN` and verified present in the deployed bundle. (CF beacon token is a public identifier, not a secret — safe in source, like a GA id.) Switched off Plausible (paid after trial).
 - ✅ Deploy: **LIVE at https://multiplayer-snake-game-199k.onrender.com** (Render Blueprint, free plan). Verified: health, SPA, /og-image.png, favicon, deep links, and DB-connected leaderboard all 200; both migrations ran on prod Postgres. Service `srv-d8hb5g6rnols73cd5evg`, DB `dpg-d8hb4rurnols73cd4u30-a`. OG image (`scripts/generate_og_image.py` → `frontend/public/og-image.png`) + real OG/Twitter tags; fixed prod static-file serving in `main.py` (og-image/favicon/robots were returning index.html); `postgres://`→`postgresql://` normalization; Dockerfile start retries migration while DB wakes + honors `$PORT`; render.yaml service renamed `multiplayer-snake-game`. **Verified by building the exact prod Docker image + running it against Postgres locally** (migrations incl. challenge_id ran, SPA + /og-image.png + API + daily flow all 200). Custom domain ⬜.
-- ⬜ Server-side score validation / anti-cheat (scores are still client-submitted — forgeable)
+- ✅ Server-side score validation / anti-cheat: stateless HMAC session tokens (stdlib, `security.py`/`deps.py`) issued on login/signup; score submit requires a Bearer token and derives the username server-side (no anonymous/impersonated scores); plausibility bounds (0..6000, step 5) + per-user rate limit (20/min). `SECRET_KEY` via Render `generateValue`. Frontend stores/sends token, session bumped v3. Tests: backend 14, frontend 50; verified live (no-token→401, spoofed username→attributed to token user, implausible→400).
 
 ### Phase 2 — Real-time multiplayer (.io arena) — not started
 WebSocket authoritative server, rooms/matchmaking, real spectating. **Open decision:** keep
@@ -73,6 +73,12 @@ Cosmetic skins, light ads, seasons/events.
 ---
 
 ## Session log (newest first)
+
+### 2026-06-05 — Anti-cheat (auth + validation)
+- Replaced the trust-the-client leaderboard with authenticated, validated submission (see roadmap 1D). HMAC session tokens, server-derived username, plausibility bounds, rate limit. Added `SECRET_KEY` to render.yaml (`generateValue`). Frontend stores/sends token; session→v3 (existing users re-login once).
+- Refined the secret-scan hook: test files are scanned for high-confidence keys only (so dummy `password123` fixtures don't false-positive).
+- Tests: backend 14, frontend 50, all green; verified end-to-end (local) + on prod (no-token submit → 401).
+- ✅ VERIFIED `SECRET_KEY` is real in prod: a token forged with the dev fallback was rejected ("Invalid or expired session"), proving Render generated/applied a unique secret (Blueprint auto-synced). Tokens are not forgeable. No data written to prod during checks.
 
 ### 2026-06-05 — Analytics live + secret-scan guardrail
 - Cloudflare Web Analytics token wired + verified in the live bundle (it's a public id, not a secret — flagged as such with `pragma: allowlist secret`).
