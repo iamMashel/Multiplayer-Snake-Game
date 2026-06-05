@@ -74,6 +74,10 @@ Cosmetic skins, light ads, seasons/events.
 
 ## Session log (newest first)
 
+### 2026-06-05 — Analytics live + secret-scan guardrail
+- Cloudflare Web Analytics token wired + verified in the live bundle (it's a public id, not a secret — flagged as such with `pragma: allowlist secret`).
+- Added a zero-dependency **pre-commit secret scanner** (`.githooks/pre-commit`, `core.hooksPath=.githooks`) per user rule [[never-commit-secrets]]: blocks PEM keys / cloud tokens / `secret=...` / creds-in-URLs in staged diffs; skips itself + lockfiles; honors `pragma: allowlist secret` and `--no-verify`. Tested blocking + pass-through. Hardened `backend/.gitignore` for `.env*`.
+
 ### 2026-06-05 — 🎉 LIVE
 - After deleting the expired `recsys-db` (freed the one-free-Postgres slot) and resuming `snake-db`, redeployed (commit c82a971) → **live at https://multiplayer-snake-game-199k.onrender.com**. All endpoints verified incl. DB-connected leaderboard. No test data written (clean public board for launch).
 - Remaining: paste Cloudflare Web Analytics token into `CF_BEACON_TOKEN`; anti-cheat before sharing widely. Free-tier caveats: web sleeps after ~15 min idle (~50s cold start); free Postgres expires ~2026-07-05.
