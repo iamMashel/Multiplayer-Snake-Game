@@ -1,9 +1,10 @@
 import React, { memo } from 'react';
 import type { GameState, Direction } from '@/types';
-import { GRID_SIZE } from '@/lib/gameLogic';
+import { GRID_SIZE, getDailyId } from '@/lib/gameLogic';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Trophy, UserPlus } from 'lucide-react';
+import { ShareScore } from './ShareScore';
 
 // Eye positions for the snake head, based on travel direction.
 const EYE_POSITIONS: Record<Direction, [string, string]> = {
@@ -138,6 +139,17 @@ export const GameBoard = memo(({
             <p className="font-display text-2xl text-secondary text-glow-secondary mb-4">
               Score: {finalScore}
             </p>
+
+            {finalScore > 0 && (
+              <div className="mb-3">
+                <ShareScore
+                  score={finalScore}
+                  mode={gameState.mode}
+                  dailyId={gameState.mode === 'daily' ? getDailyId() : undefined}
+                  isNewBest={isNewBest}
+                />
+              </div>
+            )}
 
             {isGuest && finalScore > 0 ? (
               <div className="space-y-2">

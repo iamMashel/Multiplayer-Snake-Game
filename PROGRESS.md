@@ -4,7 +4,7 @@
 > anyone (the owner, or an AI assistant resuming later) can get oriented in 2 minutes.
 > **If you're resuming work, read the "Pick up here next" section at the bottom first.**
 
-Last updated: **2026-06-05** (Phase 0 + 1A sound/juice + 1C Daily Challenge)
+Last updated: **2026-06-05** (Phase 0 + 1A juice + 1C Daily Challenge + share cards)
 
 ---
 
@@ -46,7 +46,7 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started · ⏭️ deferred
 
 **1C. Retention & virality**
 - ✅ Daily Challenge with shared seed + daily leaderboard — seeded board (same for everyone each UTC day), `DAILY` mode in menu/HUD, daily scores tagged with `challenge_id`, "Today's Daily" filter in the leaderboard. Backend: `challenge_id` column (migration `a1b2c3d4e5f6`) + filter.
-- ⬜ Shareable score cards (image + link) — NEXT
+- ✅ Shareable score cards — canvas-rendered neon "I scored N" PNG (`src/lib/shareCard.ts`) with Web Share API + download fallback + copy-link, on the game-over screen (`ShareScore.tsx`). Daily runs get daily framing.
 - 🚧 Real leaderboards: global + daily + mode filter ✅; "around-me" / friends ⬜
 - ⬜ PWA / installable + offline
 - 🚧 Frictionless guest play: device personal-best + sign-up nudge done (Phase 0); full "play first" polish ⬜
@@ -67,12 +67,17 @@ Cosmetic skins, light ads, seasons/events.
 
 ## Open decisions (waiting on owner)
 1. Multiplayer flavor for Phase 2: grid rooms vs. slither.io continuous arena.
-2. Hosting: repo's Render blueprint vs. split (frontend→Vercel / backend→Render).
+2. ~~Hosting~~ → **DECIDED (2026-06-05): deploy via the repo's existing Render blueprint (`render.yaml`).**
 3. Monetization a real goal, or is "lots of players" the win? (Affects anti-cheat/skins timing.)
 
 ---
 
 ## Session log (newest first)
+
+### 2026-06-05 — Shareable score cards + hosting decision
+- **Shareable score cards shipped:** `src/lib/shareCard.ts` renders a 1200×630 neon PNG on a canvas (score, mode/daily framing, "Can you beat me?" + URL). `ShareScore.tsx` adds Share / Copy-link buttons to the game-over screen; uses Web Share API with a PNG-download fallback, sonner toasts for feedback. Shown for any score > 0.
+- **Hosting decided:** deploy via the repo's existing **Render blueprint** (`render.yaml`).
+- Verified: `tsc` clean, 50/50 tests, build OK, clean HMR, servers green.
 
 ### 2026-06-05 — Phase 1C: Daily Challenge
 - Pushed `polish/phase0-and-juice` to GitHub.
@@ -99,19 +104,21 @@ Cosmetic skins, light ads, seasons/events.
 ---
 
 ## Pick up here next
-**Sequence: Phase 0 ✅ → Phase 1A juice/sound ✅ → Phase 1C Daily Challenge ✅ →
-⮕ NEXT: shareable score cards → deploy + analytics.**
+**Sequence: Phase 0 ✅ → 1A juice/sound ✅ → 1C Daily Challenge ✅ → share cards ✅ →
+⮕ NEXT: deploy via Render blueprint + analytics + OG tags.**
 
 Immediate next actions, in order:
-1. **Shareable score card:** render a canvas/OG image ("I scored N 🐍 — beat me") + copy-link
-   button on the game-over screen. Free organic growth; pairs perfectly with the Daily board.
-2. **Deploy + analytics:** stable public URL (Render blueprint exists; or split Vercel+Render) +
-   Plausible/PostHog + OG/share meta tags. This is what turns it into a real, reachable product.
-3. **Leaderboard "around-me"/friends** + maybe a "you ranked #N today" callout after a daily run.
-4. Still-open quick juice: combo multiplier + floating "+score" popups (deferred twice now).
+1. **Deploy via Render blueprint** (`render.yaml` — DECIDED). Review/adjust the blueprint
+   (Postgres + web service serving built frontend via the backend's static mount), set
+   `DATABASE_URL`, run the alembic migration on deploy, get a public URL. NOTE: prod uses
+   Postgres → re-test the `challenge_id` migration there.
+2. **Analytics + OG meta:** Plausible or PostHog snippet; add OG/Twitter meta tags + a static
+   share image to `frontend/index.html` so shared links preview nicely.
+3. **Leaderboard "around-me"/friends** + a "you ranked #N today" callout after a daily run.
+4. Still-open quick juice: combo multiplier + floating "+score" popups (deferred).
 
-Open question for owner before deploy: hosting choice (Render blueprint vs Vercel+Render split)
-and whether to push these branches to `main` / open a PR.
+To open a PR to `main` when ready: branch `polish/phase0-and-juice` is pushed; owner to decide
+PR vs. continue stacking.
 
 How to run locally:
 ```bash
