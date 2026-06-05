@@ -74,6 +74,11 @@ Cosmetic skins, light ads, seasons/events.
 
 ## Session log (newest first)
 
+### 2026-06-05 — Go-live (Render) + honest branding fix
+- Deployed via Render Blueprint (CLI installed + authed; blueprint validated). Service `multiplayer-snake-game` got URL `https://multiplayer-snake-game-199k.onrender.com` (name suffixed). Fixed OG/Twitter URLs to that real host.
+- **Blocked on DB:** Render free tier = one free Postgres per workspace; an expired `recsys-db` held the slot so `snake-db` came up suspended → app can't resolve the DB host. Owner deleting `recsys-db` + resuming `snake-db` to unblock (or switch to Neon for a durable free DB).
+- **Branding honesty fix (owner-requested):** dropped the misleading "Multiplayer" claim from the *visible* branding (title + OG image now "Snake — Neon Arcade", leading with Daily Challenge/Leaderboards/Score Cards). Repo name + Render URL slug keep "multiplayer" for now — revisit when Phase 2 real multiplayer ships and it becomes true.
+
 ### 2026-06-05 — Deploy prep (Render) + Plausible analytics
 - **Plausible analytics** added (prod-only, auto-domain).
 - **OG/social:** generated branded 1200×630 `og-image.png` (Pillow script in `scripts/`), rewrote `frontend/index.html` with real OG/Twitter tags + favicon + theme-color (removed leftover Lovable branding).

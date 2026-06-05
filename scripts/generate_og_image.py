@@ -68,7 +68,7 @@ def main():
     glow_text(img, (W // 2, 210), "SNAKE", font(BOLD, 170), GREEN, GREEN_GLOW, blur=22)
 
     # Subtitle (letter-spaced)
-    d.text((W // 2, 320), "M U L T I P L A Y E R   A R C A D E",
+    d.text((W // 2, 320), "N E O N   A R C A D E",
            font=font(BOLD, 44), fill=CYAN + (255,), anchor="mm")
 
     # Tagline
