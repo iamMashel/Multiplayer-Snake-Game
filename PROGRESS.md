@@ -53,7 +53,7 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started · ⏭️ deferred
 
 **1D. Product hygiene**
 - ✅ Analytics: **Cloudflare Web Analytics** (`src/lib/analytics.ts`) — free/unlimited/no-cookies, prod-only, skips localhost. Switched off Plausible (Plausible is paid after a 30-day trial). Needs the per-site beacon token pasted into `CF_BEACON_TOKEN` (no-op until then). Owner: Cloudflare → Web Analytics → Add a site (JS beacon) → copy token.
-- 🚧 Deploy: **fully prepared & locally verified, owner to click deploy.** OG image (`scripts/generate_og_image.py` → `frontend/public/og-image.png`) + real OG/Twitter tags; fixed prod static-file serving in `main.py` (og-image/favicon/robots were returning index.html); `postgres://`→`postgresql://` normalization; Dockerfile start retries migration while DB wakes + honors `$PORT`; render.yaml service renamed `multiplayer-snake-game`. **Verified by building the exact prod Docker image + running it against Postgres locally** (migrations incl. challenge_id ran, SPA + /og-image.png + API + daily flow all 200). Custom domain ⬜.
+- ✅ Deploy: **LIVE at https://multiplayer-snake-game-199k.onrender.com** (Render Blueprint, free plan). Verified: health, SPA, /og-image.png, favicon, deep links, and DB-connected leaderboard all 200; both migrations ran on prod Postgres. Service `srv-d8hb5g6rnols73cd5evg`, DB `dpg-d8hb4rurnols73cd4u30-a`. OG image (`scripts/generate_og_image.py` → `frontend/public/og-image.png`) + real OG/Twitter tags; fixed prod static-file serving in `main.py` (og-image/favicon/robots were returning index.html); `postgres://`→`postgresql://` normalization; Dockerfile start retries migration while DB wakes + honors `$PORT`; render.yaml service renamed `multiplayer-snake-game`. **Verified by building the exact prod Docker image + running it against Postgres locally** (migrations incl. challenge_id ran, SPA + /og-image.png + API + daily flow all 200). Custom domain ⬜.
 - ⬜ Server-side score validation / anti-cheat (scores are still client-submitted — forgeable)
 
 ### Phase 2 — Real-time multiplayer (.io arena) — not started
@@ -73,6 +73,10 @@ Cosmetic skins, light ads, seasons/events.
 ---
 
 ## Session log (newest first)
+
+### 2026-06-05 — 🎉 LIVE
+- After deleting the expired `recsys-db` (freed the one-free-Postgres slot) and resuming `snake-db`, redeployed (commit c82a971) → **live at https://multiplayer-snake-game-199k.onrender.com**. All endpoints verified incl. DB-connected leaderboard. No test data written (clean public board for launch).
+- Remaining: paste Cloudflare Web Analytics token into `CF_BEACON_TOKEN`; anti-cheat before sharing widely. Free-tier caveats: web sleeps after ~15 min idle (~50s cold start); free Postgres expires ~2026-07-05.
 
 ### 2026-06-05 — Go-live (Render) + honest branding fix
 - Deployed via Render Blueprint (CLI installed + authed; blueprint validated). Service `multiplayer-snake-game` got URL `https://multiplayer-snake-game-199k.onrender.com` (name suffixed). Fixed OG/Twitter URLs to that real host.
@@ -117,16 +121,14 @@ Cosmetic skins, light ads, seasons/events.
 ---
 
 ## Pick up here next
-**Sequence: Phase 0 ✅ → 1A ✅ → 1C Daily ✅ → share cards ✅ → deploy-ready ✅ →
-⮕ NEXT: owner clicks deploy on Render, then anti-cheat, then Phase 2 (real multiplayer).**
+**Sequence: Phase 0 ✅ → 1A ✅ → 1C Daily ✅ → share cards ✅ → deploy ✅ LIVE →
+⮕ NEXT: Cloudflare token + anti-cheat, then Phase 2 (real multiplayer).**
 
-OWNER ACTION TO GO LIVE (one-time):
-1. Render Dashboard → **New → Blueprint** → connect `iamMashel/Multiplayer-Snake-Game`
-   (branch `polish/phase0-and-juice`, or merge to `main` first) → Apply. It reads `render.yaml`
-   and provisions the Postgres DB + web service. First build ~5 min.
-2. Once live at `https://multiplayer-snake-game.onrender.com`, add that hostname as a site at
-   plausible.io to turn on analytics. (If you set a custom domain, update the 4 OG URLs in
-   `frontend/index.html` to match.)
+LIVE: https://multiplayer-snake-game-199k.onrender.com
+
+Owner one-time bits remaining:
+- Cloudflare → Web Analytics → add `multiplayer-snake-game-199k.onrender.com` → paste token into `CF_BEACON_TOKEN` (`frontend/src/lib/analytics.ts`).
+- Free Postgres expires ~2026-07-05 — recreate or move to Neon before then for durability.
 
 Then, next dev work in priority order:
 1. **Anti-cheat:** scores are client-submitted and forgeable — validate/sign runs server-side
