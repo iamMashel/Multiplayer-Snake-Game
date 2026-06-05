@@ -5,10 +5,10 @@ import {
   moveSnake,
   changeDirection,
   getFinalScore,
-  OPPOSITE_DIRECTIONS,
 } from '@/lib/gameLogic';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { leaderboardApi } from '@/services/api';
+import { sfx, unlockAudio } from '@/lib/sound';
 
 interface UseSnakeGameReturn {
   gameState: GameState;
@@ -19,53 +19,86 @@ interface UseSnakeGameReturn {
   setMode: (mode: GameMode) => void;
   handleDirectionChange: (direction: Direction) => void;
   finalScore: number;
+  /** Best score on this device for the current mode (works for guests too). */
+  personalBest: number;
+  /** True when the most recent game beat the device personal best. */
+  isNewBest: boolean;
+}
+
+// ---- Local personal-best storage (per mode, persists for guests & logged-in) ----
+const BEST_KEY = 'snake_personal_best';
+
+function loadBests(): Record<string, number> {
+  try {
+    return JSON.parse(localStorage.getItem(BEST_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function getBest(mode: GameMode): number {
+  return loadBests()[mode] ?? 0;
+}
+
+/** Persist a new best if it beats the stored one. Returns whether it was a new best. */
+function recordBest(mode: GameMode, score: number): boolean {
+  const bests = loadBests();
+  if (score > (bests[mode] ?? 0)) {
+    bests[mode] = score;
+    localStorage.setItem(BEST_KEY, JSON.stringify(bests));
+    return true;
+  }
+  return false;
 }
 
 export function useSnakeGame(initialMode: GameMode = 'pass-through'): UseSnakeGameReturn {
   const [gameState, setGameState] = useState<GameState>(() => createInitialState(initialMode));
+  const [personalBest, setPersonalBest] = useState<number>(() => getBest(initialMode));
+  const [isNewBest, setIsNewBest] = useState(false);
   const gameLoopRef = useRef<number | null>(null);
   const directionQueueRef = useRef<Direction[]>([]);
-  const { user } = useAuthContext();
   const previousStatusRef = useRef<GameState['status']>('idle');
+  const prevScoreRef = useRef(0);
+  const { user } = useAuthContext();
 
-  // Submit score when game ends
+  // Submit score + record personal best when a game ends
   useEffect(() => {
-    const submitScore = async () => {
-      console.log('Check submit score:', {
-        status: gameState.status,
-        prev: previousStatusRef.current,
-        user: user?.username,
-        score: gameState.score
-      });
+    if (
+      gameState.status === 'game-over' &&
+      previousStatusRef.current === 'playing'
+    ) {
+      const finalScore = getFinalScore(gameState);
 
-      if (
-        gameState.status === 'game-over' &&
-        previousStatusRef.current === 'playing' &&
-        user
-      ) {
-        const finalScore = getFinalScore(gameState);
-        console.log('Submitting score...', {
-          rawScore: gameState.score,
-          finalScore,
-          mode: gameState.mode
-        });
-
-        try {
-          const result = await leaderboardApi.submitScore(
-            finalScore,
-            gameState.mode,
-            user.username
-          );
-          console.log('Score submitted result:', result);
-        } catch (error) {
-          console.error('Failed to submit score:', error);
-        }
+      // Personal best is tracked locally for everyone (guests included).
+      const beatBest = recordBest(gameState.mode, finalScore);
+      setIsNewBest(beatBest);
+      if (beatBest) {
+        setPersonalBest(finalScore);
       }
-      previousStatusRef.current = gameState.status;
-    };
 
-    submitScore();
+      // Game-over jingle (celebratory if it's a new best).
+      sfx.gameOver();
+      if (beatBest && finalScore > 0) {
+        sfx.best();
+      }
+
+      // Only logged-in users contribute to the global leaderboard.
+      if (user) {
+        leaderboardApi
+          .submitScore(finalScore, gameState.mode, user.username)
+          .catch(() => { /* network errors are non-fatal for gameplay */ });
+      }
+    }
+    previousStatusRef.current = gameState.status;
   }, [gameState.status, gameState.score, gameState.mode, user]);
+
+  // Eat sound: fires whenever the score increases mid-game.
+  useEffect(() => {
+    if (gameState.status === 'playing' && gameState.score > prevScoreRef.current) {
+      sfx.eat();
+    }
+    prevScoreRef.current = gameState.score;
+  }, [gameState.score, gameState.status]);
 
   // Process direction queue to handle rapid inputs
   const processDirectionQueue = useCallback(() => {
@@ -78,6 +111,7 @@ export function useSnakeGame(initialMode: GameMode = 'pass-through'): UseSnakeGa
         const updated = changeDirection(newState, nextDirection);
         if (updated !== newState) {
           newState = updated;
+          sfx.turn();
           break;
         }
       }
@@ -110,7 +144,10 @@ export function useSnakeGame(initialMode: GameMode = 'pass-through'): UseSnakeGa
   // Reset game when user changes (new login/logout)
   useEffect(() => {
     setGameState(createInitialState(initialMode));
+    setPersonalBest(getBest(initialMode));
+    setIsNewBest(false);
     directionQueueRef.current = [];
+    prevScoreRef.current = 0;
   }, [user?.username]); // Use username as trigger
 
   // Keyboard controls
@@ -150,6 +187,10 @@ export function useSnakeGame(initialMode: GameMode = 'pass-through'): UseSnakeGa
   }, [gameState.status]);
 
   const startGame = useCallback(() => {
+    unlockAudio();
+    sfx.start();
+    setIsNewBest(false);
+    prevScoreRef.current = 0;
     setGameState(prev => ({ ...prev, status: 'playing' }));
     directionQueueRef.current = [];
   }, []);
@@ -173,11 +214,16 @@ export function useSnakeGame(initialMode: GameMode = 'pass-through'): UseSnakeGa
   }, []);
 
   const resetGame = useCallback(() => {
+    setIsNewBest(false);
+    prevScoreRef.current = 0;
     setGameState(createInitialState(gameState.mode));
     directionQueueRef.current = [];
   }, [gameState.mode]);
 
   const setMode = useCallback((mode: GameMode) => {
+    setIsNewBest(false);
+    prevScoreRef.current = 0;
+    setPersonalBest(getBest(mode));
     setGameState(createInitialState(mode));
     directionQueueRef.current = [];
   }, []);
@@ -199,5 +245,7 @@ export function useSnakeGame(initialMode: GameMode = 'pass-through'): UseSnakeGa
     setMode,
     handleDirectionChange,
     finalScore,
+    personalBest,
+    isNewBest,
   };
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider, useAuthContext } from '@/contexts/AuthContext';
 import { Header } from '@/components/layout/Header';
 import { GameBoard } from '@/components/game/GameBoard';
 import { GameControls } from '@/components/game/GameControls';
@@ -14,6 +14,7 @@ function GamePage() {
   const [activeTab, setActiveTab] = useState<string>('play');
   const [menuOpen, setMenuOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
+  const { isAuthenticated } = useAuthContext();
   const game = useSnakeGame('pass-through');
 
   // Pause game when modals are open
@@ -39,6 +40,7 @@ function GamePage() {
             <div className="w-full shrink-0 z-10">
               <GameOverlay
                 score={game.finalScore}
+                best={game.personalBest}
                 mode={game.gameState.mode}
                 onOpenMenu={() => setMenuOpen(true)}
               />
@@ -46,7 +48,13 @@ function GamePage() {
 
             {/* Game Area Container - Hugs content */}
             <div className="w-full aspect-square shrink shadow-2xl rounded-xl overflow-hidden border border-primary/20 bg-card/10 backdrop-blur-sm relative min-h-0">
-              <GameBoard gameState={game.gameState} finalScore={game.finalScore} />
+              <GameBoard
+                gameState={game.gameState}
+                finalScore={game.finalScore}
+                isNewBest={game.isNewBest}
+                isGuest={!isAuthenticated}
+                onRequestAuth={() => setAuthOpen(true)}
+              />
             </div>
 
             {/* Controls Area */}

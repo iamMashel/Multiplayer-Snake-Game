@@ -1,24 +1,38 @@
 import React, { memo } from 'react';
-import type { GameState } from '@/types';
+import type { GameState, Direction } from '@/types';
 import { GRID_SIZE } from '@/lib/gameLogic';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Trophy, UserPlus } from 'lucide-react';
 
-interface GameBoardProps {
-  gameState: GameState;
-  isSpectator?: boolean;
-}
+// Eye positions for the snake head, based on travel direction.
+const EYE_POSITIONS: Record<Direction, [string, string]> = {
+  UP: ['top-[14%] left-[22%]', 'top-[14%] right-[22%]'],
+  DOWN: ['bottom-[14%] left-[22%]', 'bottom-[14%] right-[22%]'],
+  LEFT: ['top-[22%] left-[14%]', 'bottom-[22%] left-[14%]'],
+  RIGHT: ['top-[22%] right-[14%]', 'bottom-[22%] right-[14%]'],
+};
 
-const Cell = memo(({ isSnakeHead, isSnakeBody, isFood }: {
+const SnakeHead = memo(({ direction }: { direction: Direction }) => {
+  const [eyeA, eyeB] = EYE_POSITIONS[direction];
+  return (
+    <div className="w-full h-full rounded-sm snake-segment relative scale-90">
+      <div className="absolute inset-0.5 bg-primary/30 rounded-sm" />
+      <span className={cn('absolute w-[20%] h-[20%] rounded-full bg-background', eyeA)} />
+      <span className={cn('absolute w-[20%] h-[20%] rounded-full bg-background', eyeB)} />
+    </div>
+  );
+});
+SnakeHead.displayName = 'SnakeHead';
+
+const Cell = memo(({ isSnakeHead, isSnakeBody, isFood, direction }: {
   isSnakeHead: boolean;
   isSnakeBody: boolean;
-  isFood: boolean
+  isFood: boolean;
+  direction: Direction;
 }) => {
   if (isSnakeHead) {
-    return (
-      <div className="w-full h-full rounded-sm snake-segment relative scale-90">
-        <div className="absolute inset-0.5 bg-primary/30 rounded-sm" />
-      </div>
-    );
+    return <SnakeHead direction={direction} />;
   }
 
   if (isSnakeBody) {
@@ -40,8 +54,25 @@ const Cell = memo(({ isSnakeHead, isSnakeBody, isFood }: {
 
 Cell.displayName = 'Cell';
 
-export const GameBoard = memo(({ gameState, isSpectator = false, finalScore = 0 }: GameBoardProps & { finalScore?: number }) => {
-  const { snake, food, status } = gameState;
+interface GameBoardProps {
+  gameState: GameState;
+  isSpectator?: boolean;
+  finalScore?: number;
+  isNewBest?: boolean;
+  /** True when no one is signed in — show a "save your score" prompt on game over. */
+  isGuest?: boolean;
+  onRequestAuth?: () => void;
+}
+
+export const GameBoard = memo(({
+  gameState,
+  isSpectator = false,
+  finalScore = 0,
+  isNewBest = false,
+  isGuest = false,
+  onRequestAuth,
+}: GameBoardProps) => {
+  const { snake, food, status, direction } = gameState;
 
   // Create a map for quick lookup
   const snakeMap = new Map<string, number>();
@@ -64,6 +95,7 @@ export const GameBoard = memo(({ gameState, isSpectator = false, finalScore = 0 
             isSnakeHead={isSnakeHead}
             isSnakeBody={isSnakeBody}
             isFood={isFood}
+            direction={direction}
           />
         </div>
       );
@@ -73,7 +105,8 @@ export const GameBoard = memo(({ gameState, isSpectator = false, finalScore = 0 
   return (
     <div className={cn(
       "relative rounded-lg overflow-hidden neon-box",
-      isSpectator && "neon-box-accent"
+      isSpectator && "neon-box-accent",
+      status === 'game-over' && !isSpectator && "game-shake"
     )}>
       {/* Scanlines overlay */}
       <div className="absolute inset-0 scanlines z-10 pointer-events-none" />
@@ -93,12 +126,36 @@ export const GameBoard = memo(({ gameState, isSpectator = false, finalScore = 0 
       {/* Game over overlay */}
       {status === 'game-over' && !isSpectator && (
         <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-20 animate-fade-in">
-          <div className="text-center">
+          <div className="text-center px-4">
             <h2 className="font-display text-3xl text-destructive neon-text mb-2">GAME OVER</h2>
+
+            {isNewBest && finalScore > 0 && (
+              <p className="font-display text-sm text-primary text-glow-primary mb-1 flex items-center justify-center gap-1">
+                <Trophy className="w-4 h-4" /> NEW BEST!
+              </p>
+            )}
+
             <p className="font-display text-2xl text-secondary text-glow-secondary mb-4">
               Score: {finalScore}
             </p>
-            <p className="text-muted-foreground">Press Start to play again</p>
+
+            {isGuest && finalScore > 0 ? (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Sign up to save your score to the global leaderboard
+                </p>
+                <Button
+                  size="sm"
+                  onClick={onRequestAuth}
+                  className="font-display arcade-button neon-box"
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Save my score
+                </Button>
+              </div>
+            ) : (
+              <p className="text-muted-foreground">Press Start to play again</p>
+            )}
           </div>
         </div>
       )}

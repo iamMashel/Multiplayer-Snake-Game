@@ -110,7 +110,7 @@ function PlayerGameView({ player, onBack }: { player: ActivePlayer; onBack: () =
       </div>
       
       <p className="text-center text-sm text-muted-foreground">
-        Watching live gameplay...
+        Watching an AI demo snake · real multiplayer coming soon
       </p>
     </div>
   );
@@ -165,10 +165,13 @@ export function SpectatorView({ className }: SpectatorViewProps) {
       <div className="p-4 border-b border-border">
         <h2 className="font-display text-xl text-accent text-glow-accent flex items-center gap-2">
           <Eye className="w-5 h-5" />
-          Watch Live Games
+          Demo Arena
+          <span className="ml-1 text-[10px] font-display uppercase tracking-widest px-2 py-0.5 rounded border border-accent/40 text-accent">
+            AI Demo
+          </span>
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          {players.length} players currently playing
+          Watch {players.length} AI-controlled snakes · real-time multiplayer is coming soon
         </p>
       </div>
 
