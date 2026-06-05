@@ -4,7 +4,7 @@
 > anyone (the owner, or an AI assistant resuming later) can get oriented in 2 minutes.
 > **If you're resuming work, read the "Pick up here next" section at the bottom first.**
 
-Last updated: **2026-06-05** (Phase 0 + 1A juice + 1C Daily Challenge + share cards)
+Last updated: **2026-06-05** (Phase 0 + 1A + 1C Daily + share cards + deploy-ready)
 
 ---
 
@@ -52,9 +52,9 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started · ⏭️ deferred
 - 🚧 Frictionless guest play: device personal-best + sign-up nudge done (Phase 0); full "play first" polish ⬜
 
 **1D. Product hygiene**
-- ⬜ Analytics (Plausible/PostHog)
-- ⬜ Proper deploy + custom domain + OG/share image
-- ⬜ Server-side score validation / anti-cheat
+- ✅ Analytics: Plausible (`src/lib/analytics.ts`) — prod-only, skips localhost, auto-uses serving hostname as the site id. Owner must add that hostname as a site at plausible.io.
+- 🚧 Deploy: **fully prepared & locally verified, owner to click deploy.** OG image (`scripts/generate_og_image.py` → `frontend/public/og-image.png`) + real OG/Twitter tags; fixed prod static-file serving in `main.py` (og-image/favicon/robots were returning index.html); `postgres://`→`postgresql://` normalization; Dockerfile start retries migration while DB wakes + honors `$PORT`; render.yaml service renamed `multiplayer-snake-game`. **Verified by building the exact prod Docker image + running it against Postgres locally** (migrations incl. challenge_id ran, SPA + /og-image.png + API + daily flow all 200). Custom domain ⬜.
+- ⬜ Server-side score validation / anti-cheat (scores are still client-submitted — forgeable)
 
 ### Phase 2 — Real-time multiplayer (.io arena) — not started
 WebSocket authoritative server, rooms/matchmaking, real spectating. **Open decision:** keep
@@ -73,6 +73,14 @@ Cosmetic skins, light ads, seasons/events.
 ---
 
 ## Session log (newest first)
+
+### 2026-06-05 — Deploy prep (Render) + Plausible analytics
+- **Plausible analytics** added (prod-only, auto-domain).
+- **OG/social:** generated branded 1200×630 `og-image.png` (Pillow script in `scripts/`), rewrote `frontend/index.html` with real OG/Twitter tags + favicon + theme-color (removed leftover Lovable branding).
+- **Fixed a prod bug:** `main.py` served `index.html` for ALL non-`/assets` paths, so `/og-image.png`, `/favicon.ico`, `/robots.txt` were broken — now serves real root static files (with path-traversal guard) and falls back to index.html.
+- **Deploy robustness:** `postgres://`→`postgresql://` normalization in `database.py`; Dockerfile start command retries the migration while the managed DB wakes and honors `$PORT`; `render.yaml` service renamed to `multiplayer-snake-game` (→ URL `multiplayer-snake-game.onrender.com`, matching the OG tags).
+- **Verified for real:** built the exact prod Docker image (`backend/Dockerfile`) and ran it against a Postgres container — both migrations ran on Postgres (incl. `challenge_id`), and `/`, `/og-image.png` (real PNG), `/favicon.ico`, deep-link SPA fallback, `/api/*`, and the full daily signup→submit→board flow all returned 200. Tore the stack down after.
+- **Owner action remaining:** connect the repo in the Render dashboard → Blueprint → deploy; then add the resulting hostname as a site at plausible.io.
 
 ### 2026-06-05 — Shareable score cards + hosting decision
 - **Shareable score cards shipped:** `src/lib/shareCard.ts` renders a 1200×630 neon PNG on a canvas (score, mode/daily framing, "Can you beat me?" + URL). `ShareScore.tsx` adds Share / Copy-link buttons to the game-over screen; uses Web Share API with a PNG-download fallback, sonner toasts for feedback. Shown for any score > 0.
@@ -104,21 +112,27 @@ Cosmetic skins, light ads, seasons/events.
 ---
 
 ## Pick up here next
-**Sequence: Phase 0 ✅ → 1A juice/sound ✅ → 1C Daily Challenge ✅ → share cards ✅ →
-⮕ NEXT: deploy via Render blueprint + analytics + OG tags.**
+**Sequence: Phase 0 ✅ → 1A ✅ → 1C Daily ✅ → share cards ✅ → deploy-ready ✅ →
+⮕ NEXT: owner clicks deploy on Render, then anti-cheat, then Phase 2 (real multiplayer).**
 
-Immediate next actions, in order:
-1. **Deploy via Render blueprint** (`render.yaml` — DECIDED). Review/adjust the blueprint
-   (Postgres + web service serving built frontend via the backend's static mount), set
-   `DATABASE_URL`, run the alembic migration on deploy, get a public URL. NOTE: prod uses
-   Postgres → re-test the `challenge_id` migration there.
-2. **Analytics + OG meta:** Plausible or PostHog snippet; add OG/Twitter meta tags + a static
-   share image to `frontend/index.html` so shared links preview nicely.
-3. **Leaderboard "around-me"/friends** + a "you ranked #N today" callout after a daily run.
-4. Still-open quick juice: combo multiplier + floating "+score" popups (deferred).
+OWNER ACTION TO GO LIVE (one-time):
+1. Render Dashboard → **New → Blueprint** → connect `iamMashel/Multiplayer-Snake-Game`
+   (branch `polish/phase0-and-juice`, or merge to `main` first) → Apply. It reads `render.yaml`
+   and provisions the Postgres DB + web service. First build ~5 min.
+2. Once live at `https://multiplayer-snake-game.onrender.com`, add that hostname as a site at
+   plausible.io to turn on analytics. (If you set a custom domain, update the 4 OG URLs in
+   `frontend/index.html` to match.)
 
-To open a PR to `main` when ready: branch `polish/phase0-and-juice` is pushed; owner to decide
-PR vs. continue stacking.
+Then, next dev work in priority order:
+1. **Anti-cheat:** scores are client-submitted and forgeable — validate/sign runs server-side
+   before the leaderboard means anything. Do this before promoting the game widely.
+2. **Leaderboard "around-me"/friends** + "you ranked #N today" callout after a daily run.
+3. **PWA / installable** (manifest + service worker) for repeat mobile visits.
+4. **Phase 2 — real multiplayer** (the big retention unlock). Open decision: grid rooms vs.
+   slither.io continuous arena.
+5. Still-open quick juice: combo multiplier + floating "+score" popups.
+
+Branch `polish/phase0-and-juice` is pushed; owner to decide PR-to-`main` vs. continue stacking.
 
 How to run locally:
 ```bash

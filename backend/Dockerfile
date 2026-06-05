@@ -34,5 +34,5 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 8000
 
-# Run migrations and start server
-CMD ["sh", "-c", "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"]
+# Run migrations (retry while the managed DB wakes up) and start the server.
+CMD ["sh", "-c", "for i in $(seq 1 30); do alembic upgrade head && break || (echo 'DB not ready, retrying in 2s...'; sleep 2); done; uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]

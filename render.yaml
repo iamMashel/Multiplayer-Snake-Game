@@ -1,6 +1,8 @@
 services:
   - type: web
-    name: vibe-coding-snake
+    # Service name → public URL is https://<name>.onrender.com
+    # (kept in sync with the og:image/og:url domain in frontend/index.html)
+    name: multiplayer-snake-game
     runtime: docker
     region: oregon
     plan: free

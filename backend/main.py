@@ -43,6 +43,15 @@ if os.path.exists("/app/static"):
         # Allow API routes to pass through (though they should be caught by routers above)
         if full_path.startswith("api/"):
                 return {"error": "Not found"}
-                
+
+        # Serve real root-level static files (og-image.png, favicon.ico, robots.txt, etc.)
+        # if they exist; otherwise fall back to index.html for client-side routing.
+        if full_path:
+            static_root = os.path.realpath("/app/static")
+            candidate = os.path.realpath(os.path.join(static_root, full_path))
+            # Guard against path traversal outside the static dir.
+            if candidate.startswith(static_root + os.sep) and os.path.isfile(candidate):
+                return FileResponse(candidate)
+
         # Serve index.html for all other routes (SPA)
         return FileResponse("/app/static/index.html")
