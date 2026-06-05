@@ -52,7 +52,7 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started · ⏭️ deferred
 - 🚧 Frictionless guest play: device personal-best + sign-up nudge done (Phase 0); full "play first" polish ⬜
 
 **1D. Product hygiene**
-- ✅ Analytics: Plausible (`src/lib/analytics.ts`) — prod-only, skips localhost, auto-uses serving hostname as the site id. Owner must add that hostname as a site at plausible.io.
+- ✅ Analytics: **Cloudflare Web Analytics** (`src/lib/analytics.ts`) — free/unlimited/no-cookies, prod-only, skips localhost. Switched off Plausible (Plausible is paid after a 30-day trial). Needs the per-site beacon token pasted into `CF_BEACON_TOKEN` (no-op until then). Owner: Cloudflare → Web Analytics → Add a site (JS beacon) → copy token.
 - 🚧 Deploy: **fully prepared & locally verified, owner to click deploy.** OG image (`scripts/generate_og_image.py` → `frontend/public/og-image.png`) + real OG/Twitter tags; fixed prod static-file serving in `main.py` (og-image/favicon/robots were returning index.html); `postgres://`→`postgresql://` normalization; Dockerfile start retries migration while DB wakes + honors `$PORT`; render.yaml service renamed `multiplayer-snake-game`. **Verified by building the exact prod Docker image + running it against Postgres locally** (migrations incl. challenge_id ran, SPA + /og-image.png + API + daily flow all 200). Custom domain ⬜.
 - ⬜ Server-side score validation / anti-cheat (scores are still client-submitted — forgeable)
 
