@@ -13,7 +13,8 @@
  *
  * While the token is empty this is a no-op, so it's safe to ship before setup.
  */
-const CF_BEACON_TOKEN = '960369369f314a1c8cf0bec0caa5699e';
+// Public site identifier (embedded in page HTML by design), not a secret.
+const CF_BEACON_TOKEN = '960369369f314a1c8cf0bec0caa5699e'; // pragma: allowlist secret
 
 export function initAnalytics(): void {
   if (!import.meta.env.PROD) return;
