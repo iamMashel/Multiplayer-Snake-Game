@@ -44,6 +44,14 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started · ⏭️ deferred
 - ⬜ Difficulty curve / themed arenas
 - ⬜ Mobile swipe controls (currently on-screen arrows only)
 
+**1E. Customization (player ownership) — NEW, shipped 2026-06-05**
+- ✅ Theming engine: overrides the HSL CSS-var design tokens at runtime + `data-*` on `<html>`. Store `useCustomization` (`CustomizationContext`), localStorage `snake_customization_v1`, applied instantly. Files: `lib/customization.ts`, `contexts/CustomizationContext.tsx`.
+- ✅ 6 palette presets (Neon/Synthwave/Vapor/Inferno/Ocean/Mono) + full custom colors (snake/food/board/accent via native color pickers).
+- ✅ Board grid vs no-grid; snake skins (glow/gradient/striped/solid); food shape classic vs **heart** with **blink** (defaults: heart + blink). Reduced-motion safe.
+- ✅ Haptics (`lib/haptics.ts`, navigator.vibrate) on eat/crash, gated by setting; mobile only. Sound unified through customization (`sound.ts` stays the gate).
+- ✅ `CustomizePanel` (tabbed dialog: Palette/Board/Snake/Food/Feel) with live mini-preview, swatches, segmented controls, toggles, reset. Entry: "Customize" in the header. Built per /impeccable (see PRODUCT.md, DESIGN.md). Verified via headless-Chrome screenshots (heart renders; live re-theme works).
+- ⬜ Future: account-synced cosmetics, unlockable skins, more presets.
+
 **1C. Retention & virality**
 - ✅ Daily Challenge with shared seed + daily leaderboard — seeded board (same for everyone each UTC day), `DAILY` mode in menu/HUD, daily scores tagged with `challenge_id`, "Today's Daily" filter in the leaderboard. Backend: `challenge_id` column (migration `a1b2c3d4e5f6`) + filter.
 - ✅ Shareable score cards — canvas-rendered neon "I scored N" PNG (`src/lib/shareCard.ts`) with Web Share API + download fallback + copy-link, on the game-over screen (`ShareScore.tsx`). Daily runs get daily framing.
@@ -73,6 +81,11 @@ Cosmetic skins, light ads, seasons/events.
 ---
 
 ## Session log (newest first)
+
+### 2026-06-05 — Customization / player ownership (/impeccable)
+- Added PRODUCT.md + DESIGN.md (impeccable context). Built a full theming/customization system: runtime CSS-var overrides + `data-*`, localStorage store, 6 palettes + custom colors, board grid toggle, snake skins, heart-shaped blinking food (default), haptics, unified sound. New `CustomizePanel` (tabbed, live preview) reachable from the header "Customize" button.
+- Files: new `lib/customization.ts`, `lib/haptics.ts`, `contexts/CustomizationContext.tsx`, `components/game/CustomizePanel.tsx`; edited GameBoard/GameOverlay/Header/Index/App/index.css/useSnakeGame.
+- tsc clean, 50 tests pass, build OK. Verified visually with headless Chrome: heart food renders, and switching palettes live-re-themes the whole UI (snake/board/accent/food).
 
 ### 2026-06-05 — Anti-cheat (auth + validation)
 - Replaced the trust-the-client leaderboard with authenticated, validated submission (see roadmap 1D). HMAC session tokens, server-derived username, plausibility bounds, rate limit. Added `SECRET_KEY` to render.yaml (`generateValue`). Frontend stores/sends token; session→v3 (existing users re-login once).

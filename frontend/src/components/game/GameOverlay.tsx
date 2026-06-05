@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { GameMode } from '@/types';
 import { cn } from '@/lib/utils';
 import { Settings2, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { isMuted, setMuted, unlockAudio } from '@/lib/sound';
+import { unlockAudio } from '@/lib/sound';
+import { useCustomization } from '@/contexts/CustomizationContext';
 
 interface GameOverlayProps {
   score: number;
@@ -14,13 +15,13 @@ interface GameOverlayProps {
 }
 
 export function GameOverlay({ score, best = 0, mode, onOpenMenu }: GameOverlayProps) {
-  const [muted, setMutedState] = useState(() => isMuted());
+  const { customization, update } = useCustomization();
+  const muted = !customization.sound;
 
   const toggleMute = () => {
-    const next = !muted;
-    setMuted(next);
-    setMutedState(next);
-    if (!next) unlockAudio(); // unmuting counts as a gesture — prime the audio context
+    const nextSound = !customization.sound;
+    update({ sound: nextSound });
+    if (nextSound) unlockAudio(); // unmuting counts as a gesture — prime the audio context
   };
 
   return (

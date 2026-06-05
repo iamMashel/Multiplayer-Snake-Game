@@ -204,6 +204,60 @@
     30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
     40%, 60% { transform: translate3d(4px, 0, 0); }
   }
+
+  /* ===== Player customization (driven by data-* on the document root) ===== */
+
+  /* Food shape: classic dot vs heart. Both are always rendered; CSS picks one. */
+  .food-cell { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .food-heart { display: none; width: 80%; height: 80%; }
+  [data-food="heart"] .food-dot { display: none; }
+  [data-food="heart"] .food-heart { display: block; }
+  .food-heart path {
+    fill: hsl(var(--food));
+    filter: drop-shadow(0 0 5px hsl(var(--food-glow) / 0.9));
+  }
+
+  /* Food blink (hard on/off). Off = the gentler pulse. */
+  [data-blink="on"] .food-dot,
+  [data-blink="on"] .food-heart {
+    animation: food-blink 0.9s steps(1, end) infinite;
+  }
+  @keyframes food-blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0.18; }
+  }
+
+  /* Board: grid lines vs plain. */
+  [data-board="plain"] .game-grid {
+    gap: 0 !important;
+    background: hsl(var(--grid-bg)) !important;
+  }
+
+  /* Snake skins. */
+  [data-skin="solid"] .snake-segment {
+    background: hsl(var(--snake-head));
+    box-shadow: none;
+  }
+  [data-skin="gradient"] .snake-segment {
+    background: linear-gradient(135deg, hsl(var(--snake-head)), hsl(var(--snake-body)));
+    box-shadow: 0 0 6px hsl(var(--snake-glow) / 0.4);
+  }
+  [data-skin="striped"] .snake-segment {
+    background: repeating-linear-gradient(
+      45deg,
+      hsl(var(--snake-head)) 0 4px,
+      hsl(var(--snake-body)) 4px 8px
+    );
+    box-shadow: 0 0 6px hsl(var(--snake-glow) / 0.4);
+  }
+  [data-skin="glow"] .snake-segment {
+    background: linear-gradient(135deg, hsl(var(--snake-head)), hsl(var(--snake-body)));
+    box-shadow: 0 0 10px hsl(var(--snake-glow) / 0.9), 0 0 18px hsl(var(--snake-glow) / 0.5);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .food-item, .food-dot, .food-heart, .game-shake { animation: none !important; }
+  }
 }
 
 @layer utilities {

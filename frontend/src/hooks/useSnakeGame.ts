@@ -8,8 +8,10 @@ import {
   getDailyId,
 } from '@/lib/gameLogic';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useCustomization } from '@/contexts/CustomizationContext';
 import { leaderboardApi } from '@/services/api';
 import { sfx, unlockAudio } from '@/lib/sound';
+import { haptics } from '@/lib/haptics';
 
 interface UseSnakeGameReturn {
   gameState: GameState;
@@ -61,6 +63,8 @@ export function useSnakeGame(initialMode: GameMode = 'pass-through'): UseSnakeGa
   const previousStatusRef = useRef<GameState['status']>('idle');
   const prevScoreRef = useRef(0);
   const { user } = useAuthContext();
+  const { customization } = useCustomization();
+  const hapticsOn = customization.haptics;
 
   // Submit score + record personal best when a game ends
   useEffect(() => {
@@ -77,8 +81,9 @@ export function useSnakeGame(initialMode: GameMode = 'pass-through'): UseSnakeGa
         setPersonalBest(finalScore);
       }
 
-      // Game-over jingle (celebratory if it's a new best).
+      // Game-over jingle (celebratory if it's a new best) + crash buzz.
       sfx.gameOver();
+      if (hapticsOn) haptics.crash();
       if (beatBest && finalScore > 0) {
         sfx.best();
       }
@@ -93,15 +98,16 @@ export function useSnakeGame(initialMode: GameMode = 'pass-through'): UseSnakeGa
       }
     }
     previousStatusRef.current = gameState.status;
-  }, [gameState.status, gameState.score, gameState.mode, user]);
+  }, [gameState.status, gameState.score, gameState.mode, user, hapticsOn]);
 
-  // Eat sound: fires whenever the score increases mid-game.
+  // Eat feedback: fires whenever the score increases mid-game.
   useEffect(() => {
     if (gameState.status === 'playing' && gameState.score > prevScoreRef.current) {
       sfx.eat();
+      if (hapticsOn) haptics.eat();
     }
     prevScoreRef.current = gameState.score;
-  }, [gameState.score, gameState.status]);
+  }, [gameState.score, gameState.status, hapticsOn]);
 
   // Process direction queue to handle rapid inputs
   const processDirectionQueue = useCallback(() => {

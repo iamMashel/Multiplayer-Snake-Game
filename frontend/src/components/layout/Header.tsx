@@ -8,15 +8,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { User, LogOut, Trophy, Gamepad2 } from 'lucide-react';
+import { User, LogOut, Trophy, Gamepad2, Palette } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   onAuthRequest: () => void;
+  onCustomize: () => void;
 }
 
-export function Header({ activeTab, onTabChange, onAuthRequest }: HeaderProps) {
+export function Header({ activeTab, onTabChange, onAuthRequest, onCustomize }: HeaderProps) {
   const { user, isAuthenticated, logout } = useAuthContext();
 
   return (
@@ -59,6 +60,16 @@ export function Header({ activeTab, onTabChange, onAuthRequest }: HeaderProps) {
             >
               <User className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">Watch</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onCustomize}
+              className="font-display text-xs text-accent hover:text-accent"
+              aria-label="Customize"
+            >
+              <Palette className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Customize</span>
             </Button>
           </nav>
 

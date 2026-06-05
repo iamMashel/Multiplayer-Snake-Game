@@ -7,6 +7,7 @@ import { Leaderboard } from '@/components/game/Leaderboard';
 import { SpectatorView } from '@/components/game/SpectatorView';
 import { GameOverlay } from '@/components/game/GameOverlay';
 import { MenuModal } from '@/components/game/MenuModal';
+import { CustomizePanel } from '@/components/game/CustomizePanel';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useSnakeGame } from '@/hooks/useSnakeGame';
 
@@ -14,15 +15,16 @@ function GamePage() {
   const [activeTab, setActiveTab] = useState<string>('play');
   const [menuOpen, setMenuOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
+  const [customizeOpen, setCustomizeOpen] = useState(false);
   const { isAuthenticated } = useAuthContext();
   const game = useSnakeGame('pass-through');
 
-  // Pause game when modals are open
+  // Pause game when any overlay is open
   React.useEffect(() => {
-    if (menuOpen || authOpen) {
+    if (menuOpen || authOpen || customizeOpen) {
       game.pauseGame();
     }
-  }, [menuOpen, authOpen]);
+  }, [menuOpen, authOpen, customizeOpen]);
 
   return (
     <div className="h-[100dvh] flex flex-col bg-background overflow-hidden relative touch-none">
@@ -30,6 +32,7 @@ function GamePage() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onAuthRequest={() => setAuthOpen(true)}
+        onCustomize={() => setCustomizeOpen(true)}
       />
 
       <main className="flex-1 flex flex-col min-h-0 container mx-auto px-2 pb-safe justify-center items-center">
@@ -94,6 +97,8 @@ function GamePage() {
         }}
         gameStatus={game.gameState.status}
       />
+
+      <CustomizePanel open={customizeOpen} onOpenChange={setCustomizeOpen} />
 
       <AuthModal open={authOpen} onOpenChange={setAuthOpen} />
     </div>
