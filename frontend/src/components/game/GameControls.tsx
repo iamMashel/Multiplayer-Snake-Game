@@ -94,7 +94,7 @@ export function GameControls({
       )}
 
       {/* Mobile D-Pad Controls - Larger & Centered */}
-      <div className={`bg-card/50 backdrop-blur-sm rounded-xl p-2 border border-border/50 shadow-xl md:hidden ${showPad ? '' : 'hidden'}`}>
+      <div className={`bg-card/60 rounded-xl p-2 border border-border/50 shadow-xl md:hidden ${showPad ? '' : 'hidden'}`}>
         <div className="grid grid-cols-3 gap-3 max-w-[240px] mx-auto">
           <div />
           <Button
@@ -102,6 +102,7 @@ export function GameControls({
             size="icon"
             onClick={() => onDirectionChange('UP')}
             disabled={status !== 'playing'}
+            aria-label="Move up"
             className="aspect-square h-16 w-16 rounded-2xl bg-background/50 border-primary/30 active:scale-95 transition-transform active:bg-primary/20"
           >
             <ArrowUp className="w-8 h-8" />
@@ -113,6 +114,7 @@ export function GameControls({
             size="icon"
             onClick={() => onDirectionChange('LEFT')}
             disabled={status !== 'playing'}
+            aria-label="Move left"
             className="aspect-square h-16 w-16 rounded-2xl bg-background/50 border-primary/30 active:scale-95 transition-transform active:bg-primary/20"
           >
             <ArrowLeft className="w-8 h-8" />
@@ -122,6 +124,7 @@ export function GameControls({
             size="icon"
             onClick={() => onDirectionChange('DOWN')}
             disabled={status !== 'playing'}
+            aria-label="Move down"
             className="aspect-square h-16 w-16 rounded-2xl bg-background/50 border-primary/30 active:scale-95 transition-transform active:bg-primary/20"
           >
             <ArrowDown className="w-8 h-8" />
@@ -131,6 +134,7 @@ export function GameControls({
             size="icon"
             onClick={() => onDirectionChange('RIGHT')}
             disabled={status !== 'playing'}
+            aria-label="Move right"
             className="aspect-square h-16 w-16 rounded-2xl bg-background/50 border-primary/30 active:scale-95 transition-transform active:bg-primary/20"
           >
             <ArrowRight className="w-8 h-8" />

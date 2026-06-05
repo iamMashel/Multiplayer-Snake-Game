@@ -82,6 +82,14 @@ Cosmetic skins, light ads, seasons/events.
 
 ## Session log (newest first)
 
+### 2026-06-05 — /impeccable audit + fixes (harden/optimize/adapt/polish)
+- Ran /impeccable audit: **16/20 (Good)**, anti-pattern verdict PASS (not AI slop). Then fixed the findings:
+  - **harden:** aria-labels on D-pad arrows; rebranded the generic 404 → neon "404 · Lost in the grid" (removed its console.error); removed stray console.error in api.ts (clearer network message); added a `sr-only` aria-live score/game-over announcer + `role="application"` board label.
+  - **optimize:** lazy-loaded modals + tab views (Leaderboard/Spectator/Menu/Customize/Auth) → initial JS **435KB → 395KB** (split chunks).
+  - **adapt:** in-game HUD buttons + color swatches bumped to 44px touch target on mobile (`h-11 sm:h-9`).
+  - **polish:** removed glassmorphism from HUD chips/badges/D-pad (kept blur on dialogs only); tokenized the v1.1 badge color.
+- tsc clean, 50 tests, build OK; verified 404 + HUD via screenshots. Estimated re-audit ~19/20.
+
 ### 2026-06-05 — Mobile swipe controls
 - `useSwipe` hook: swipe-to-steer on the board (threshold + dominant-axis, re-anchors mid-drag for chained turns), wired to the same `handleDirectionChange` as keyboard/D-pad. Board wrapper gets `touch-none`.
 - Added `touchControl` preference (Both/Swipe/Buttons) to customization + Feel tab; D-pad hides in Swipe mode for a tighter board. "Swipe the board to steer" hint on mobile.

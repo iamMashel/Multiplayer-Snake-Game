@@ -34,9 +34,8 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     }
 
     return data;
-  } catch (error) {
-    console.error('API Request Error:', error);
-    return { success: false, error: 'Network error details' };
+  } catch {
+    return { success: false, error: 'Network error. Check your connection and try again.' };
   }
 }
 

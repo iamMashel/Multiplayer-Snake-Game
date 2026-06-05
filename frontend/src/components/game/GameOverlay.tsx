@@ -25,16 +25,16 @@ export function GameOverlay({ score, best = 0, mode, onOpenMenu }: GameOverlayPr
   };
 
   return (
-    <div className="w-full px-4 py-2 flex justify-between items-center z-10 bg-background/50 backdrop-blur-sm">
+    <div className="w-full px-4 py-2 flex justify-between items-center z-10 bg-background/60">
       <div className="flex items-center gap-2">
-        <div className="bg-background/80 backdrop-blur-md rounded-lg px-3 py-1.5 border border-primary/20 shadow-[0_0_15px_rgba(255,255,255,0.05)] neon-box-secondary">
+        <div className="bg-background/90 rounded-lg px-3 py-1.5 border border-primary/20 neon-box-secondary">
           <span className="text-[10px] text-muted-foreground uppercase tracking-widest block font-display">Score</span>
           <span className="text-2xl font-bold font-display text-secondary text-glow-secondary leading-none">
             {score}
           </span>
         </div>
 
-        <div className="bg-background/80 backdrop-blur-md rounded-lg px-3 py-1.5 border border-primary/20">
+        <div className="bg-background/90 rounded-lg px-3 py-1.5 border border-primary/20">
           <span className="text-[10px] text-muted-foreground uppercase tracking-widest block font-display">Best</span>
           <span className="text-2xl font-bold font-display text-primary text-glow-primary leading-none">
             {best}
@@ -46,7 +46,7 @@ export function GameOverlay({ score, best = 0, mode, onOpenMenu }: GameOverlayPr
         <Badge
           variant="outline"
           className={cn(
-            "bg-background/80 backdrop-blur-md border-primary/30 font-display text-xs h-9",
+            "bg-background/90 border-primary/30 font-display text-xs h-9",
             mode === 'walls' && "text-destructive border-destructive/50",
             mode === 'daily' && "text-accent border-accent/50",
             mode === 'pass-through' && "text-primary"
@@ -60,9 +60,9 @@ export function GameOverlay({ score, best = 0, mode, onOpenMenu }: GameOverlayPr
           size="icon"
           onClick={toggleMute}
           aria-label={muted ? 'Unmute' : 'Mute'}
-          className="h-9 w-9 bg-background/80 backdrop-blur-md border-primary/30 hover:bg-primary/20"
+          className="h-11 w-11 sm:h-9 sm:w-9 bg-background/90 border-primary/30 hover:bg-primary/20"
         >
-          {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          {muted ? <VolumeX className="h-5 w-5 sm:h-4 sm:w-4" /> : <Volume2 className="h-5 w-5 sm:h-4 sm:w-4" />}
         </Button>
 
         <Button
@@ -70,9 +70,9 @@ export function GameOverlay({ score, best = 0, mode, onOpenMenu }: GameOverlayPr
           size="icon"
           onClick={onOpenMenu}
           aria-label="Open menu"
-          className="h-9 w-9 bg-background/80 backdrop-blur-md border-primary/30 hover:bg-primary/20"
+          className="h-11 w-11 sm:h-9 sm:w-9 bg-background/90 border-primary/30 hover:bg-primary/20"
         >
-          <Settings2 className="h-4 w-4" />
+          <Settings2 className="h-5 w-5 sm:h-4 sm:w-4" />
         </Button>
       </div>
     </div>

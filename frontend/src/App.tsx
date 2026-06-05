@@ -21,7 +21,7 @@ const App = () => (
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-        <div className="fixed bottom-1 right-1 text-xs text-gray-400 opacity-50 pointer-events-none">v1.1</div>
+        <div className="fixed bottom-1 right-1 text-xs text-muted-foreground opacity-50 pointer-events-none">v1.1</div>
       </BrowserRouter>
     </TooltipProvider>
     </CustomizationProvider>

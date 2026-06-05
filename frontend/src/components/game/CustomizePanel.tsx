@@ -100,7 +100,7 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
   return (
     <label className="flex items-center justify-between gap-3 py-2">
       <span className="text-sm text-foreground">{label}</span>
-      <span className="relative inline-flex items-center justify-center w-10 h-10 rounded-md border border-border overflow-hidden">
+      <span className="relative inline-flex items-center justify-center w-11 h-11 rounded-md border border-border overflow-hidden">
         <input
           type="color"
           value={value}
