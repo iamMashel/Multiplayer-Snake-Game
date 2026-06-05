@@ -10,8 +10,8 @@
 #
 set -uo pipefail
 
-# Likely-secret patterns (extended regex). Value-gated to limit false positives.
-patterns=(
+# High-confidence patterns for real keys/tokens — scanned in EVERY file.
+high_confidence=(
   '-----BEGIN[A-Z ]*PRIVATE KEY-----'                 # PEM private keys
   'AKIA[0-9A-Z]{16}'                                  # AWS access key id
   'ASIA[0-9A-Z]{16}'                                  # AWS temp access key
@@ -22,8 +22,12 @@ patterns=(
   'AIza[0-9A-Za-z_-]{35}'                             # Google API key
   'sk_live_[0-9a-zA-Z]{20,}'                          # Stripe secret key
   'rk_live_[0-9a-zA-Z]{20,}'                          # Stripe restricted key
-  '(secret|password|passwd|client[_-]?secret|api[_-]?key|access[_-]?key|private[_-]?key|auth[_-]?token)["'"'"' ]*[:=][[:space:]]*["'"'"'][^"'"'"' ]{8,}'
   '(postgres(ql)?|mysql|mongodb(\+srv)?|redis|amqp)://[^:@/[:space:]]+:[^@/[:space:]]+@'  # creds in a URL
+)
+# Generic "secret=..." assignments — noisy in test fixtures (dummy passwords),
+# so these are skipped for test files but enforced everywhere else.
+generic=(
+  '(secret|password|passwd|client[_-]?secret|api[_-]?key|access[_-]?key|private[_-]?key|auth[_-]?token)["'"'"' ]*[:=][[:space:]]*["'"'"'][^"'"'"' ]{8,}'
 )
 
 files=$(git diff --cached --name-only --diff-filter=ACM)
@@ -38,6 +42,13 @@ while IFS= read -r f; do
   # strings) or large generated lockfiles.
   case "$f" in
     .githooks/*|*.lock|*package-lock.json|*bun.lockb|*uv.lock) continue ;;
+  esac
+  # Build the pattern set for this file: test files only get high-confidence
+  # patterns (dummy passwords in fixtures shouldn't block commits).
+  patterns=( "${high_confidence[@]}" )
+  case "$f" in
+    *test_*.py|*_test.py|*/tests/*|*/tests_integration/*|*.test.ts|*.test.tsx|*.test.js|*/__tests__/*) ;;
+    *) patterns+=( "${generic[@]}" ) ;;
   esac
   added=$(git diff --cached -U0 --no-color -- "$f" | grep -E '^\+' | grep -vE '^\+\+\+' || true)
   [ -z "$added" ] && continue

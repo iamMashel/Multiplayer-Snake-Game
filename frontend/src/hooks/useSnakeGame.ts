@@ -88,7 +88,7 @@ export function useSnakeGame(initialMode: GameMode = 'pass-through'): UseSnakeGa
       if (user) {
         const challengeId = gameState.mode === 'daily' ? getDailyId() : undefined;
         leaderboardApi
-          .submitScore(finalScore, gameState.mode, user.username, challengeId)
+          .submitScore(finalScore, gameState.mode, challengeId)
           .catch(() => { /* network errors are non-fatal for gameplay */ });
       }
     }

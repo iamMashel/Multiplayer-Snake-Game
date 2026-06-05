@@ -40,42 +40,55 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   }
 }
 
-// Session storage key
-const SESSION_KEY = 'snake_game_session_v2';
+// Session storage keys (v3: sessions now carry an auth token)
+const SESSION_KEY = 'snake_game_session_v3';
+const TOKEN_KEY = 'snake_game_token_v3';
+
+/** Auth payload returned by login/signup. */
+interface AuthData {
+  user: User;
+  token: string;
+}
+
+/** The current Bearer token, if logged in. */
+export function getAuthToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+/** Persist the user + token from an auth response and normalize to ApiResponse<User>. */
+function persistAuth(response: ApiResponse<AuthData>): ApiResponse<User> {
+  if (response.success && response.data) {
+    localStorage.setItem(SESSION_KEY, JSON.stringify(response.data.user));
+    localStorage.setItem(TOKEN_KEY, response.data.token);
+    return { success: true, data: response.data.user };
+  }
+  return { success: false, error: response.error };
+}
 
 // ============ Auth API ============
 
 export const authApi = {
   async login(credentials: LoginCredentials): Promise<ApiResponse<User>> {
-    const response = await request<User>('/auth/login', {
+    const response = await request<AuthData>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
-
-    if (response.success && response.data) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(response.data));
-    }
-
-    return response;
+    return persistAuth(response);
   },
 
   async signup(credentials: SignupCredentials): Promise<ApiResponse<User>> {
-    const response = await request<User>('/auth/signup', {
+    const response = await request<AuthData>('/auth/signup', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
-
-    if (response.success && response.data) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(response.data));
-    }
-
-    return response;
+    return persistAuth(response);
   },
 
   async logout(): Promise<ApiResponse<null>> {
     // In a real app we might call the backend too
     // await request('/auth/logout', { method: 'POST' });
     localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(TOKEN_KEY);
     return { success: true };
   },
 
@@ -104,12 +117,13 @@ export const leaderboardApi = {
   async submitScore(
     score: number,
     mode: GameMode,
-    username: string,
     challengeId?: string,
   ): Promise<ApiResponse<LeaderboardEntry>> {
+    const token = getAuthToken();
     return request<LeaderboardEntry>('/leaderboard/', {
       method: 'POST',
-      body: JSON.stringify({ score, mode, username, challenge_id: challengeId }),
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: JSON.stringify({ score, mode, challenge_id: challengeId }),
     });
   },
 };

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from ..db.database import get_db
 from ..db.models import User as DBUser
 from ..models import LoginCredentials, SignupCredentials, User, ApiResponse
-from ..security import verify_password, get_password_hash
+from ..security import verify_password, get_password_hash, create_session_token
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -16,6 +16,13 @@ def to_pydantic_user(db_user: DBUser) -> User:
         createdAt=db_user.created_at
     )
 
+def auth_payload(db_user: DBUser) -> dict:
+    """User + a signed session token, returned on login/signup."""
+    return {
+        "user": to_pydantic_user(db_user).model_dump(mode="json"),
+        "token": create_session_token(str(db_user.id), db_user.username),
+    }
+
 @router.post("/login", response_model=ApiResponse)
 async def login(credentials: LoginCredentials, db: Session = Depends(get_db)):
     user_in_db = db.query(DBUser).filter(DBUser.email == credentials.email).first()
@@ -26,9 +33,7 @@ async def login(credentials: LoginCredentials, db: Session = Depends(get_db)):
     if not verify_password(credentials.password, user_in_db.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    # In a real app we'd define a session/token here
-    
-    return ApiResponse(success=True, data=to_pydantic_user(user_in_db))
+    return ApiResponse(success=True, data=auth_payload(user_in_db))
 
 @router.post("/signup", response_model=ApiResponse)
 async def signup(credentials: SignupCredentials, db: Session = Depends(get_db)):
@@ -49,8 +54,8 @@ async def signup(credentials: SignupCredentials, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    
-    return ApiResponse(success=True, data=to_pydantic_user(new_user))
+
+    return ApiResponse(success=True, data=auth_payload(new_user))
 
 @router.post("/logout", response_model=ApiResponse)
 async def logout():

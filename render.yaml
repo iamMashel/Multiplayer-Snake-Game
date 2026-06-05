@@ -13,6 +13,8 @@ services:
         fromDatabase:
           name: snake-db
           property: connectionString
+      - key: SECRET_KEY
+        generateValue: true   # Render generates & injects; never stored in git
       - key: PORT
         value: 8000
     autoDeploy: true

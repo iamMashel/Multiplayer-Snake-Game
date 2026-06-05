@@ -27,14 +27,15 @@ describe('API Service', () => {
     it('successfully logs in with valid credentials', async () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true, data: mockUser }),
+        json: async () => ({ success: true, data: { user: mockUser, token: 'tok-123' } }),
       });
 
       const response = await authApi.login({ email: 'test@example.com', password: 'password123' });
 
       expect(response.success).toBe(true);
       expect(response.data).toEqual(mockUser);
-      expect(localStorage.getItem('snake_game_session_v2')).toBeTruthy();
+      expect(localStorage.getItem('snake_game_session_v3')).toBeTruthy();
+      expect(localStorage.getItem('snake_game_token_v3')).toBe('tok-123');
       expect(fetchMock).toHaveBeenCalledWith('http://localhost:8000/api/auth/login', expect.any(Object));
     });
 
@@ -53,13 +54,14 @@ describe('API Service', () => {
     it('successfully signs up', async () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true, data: mockUser }),
+        json: async () => ({ success: true, data: { user: mockUser, token: 'tok-456' } }),
       });
 
       const response = await authApi.signup({ username: 'TestUser', email: 'test@example.com', password: 'password123' });
 
       expect(response.success).toBe(true);
       expect(response.data).toEqual(mockUser);
+      expect(localStorage.getItem('snake_game_token_v3')).toBe('tok-456');
     });
   });
 

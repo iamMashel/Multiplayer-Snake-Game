@@ -10,9 +10,10 @@ def test_signup_flow(client):
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
-    assert data["data"]["username"] == "testsnake"
-    assert "password" not in data["data"]
-    
+    assert data["data"]["user"]["username"] == "testsnake"
+    assert "password" not in data["data"]["user"]
+    assert data["data"]["token"]  # a session token is issued
+
     # 2. Login
     login_data = {
         "email": "test@snake.com",
@@ -22,7 +23,8 @@ def test_signup_flow(client):
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
-    assert data["data"]["email"] == "test@snake.com"
+    assert data["data"]["user"]["email"] == "test@snake.com"
+    assert data["data"]["token"]
 
 def test_duplicate_signup(client):
     user_data = {
