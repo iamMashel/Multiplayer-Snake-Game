@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { LeaderboardEntry, GameMode } from '@/types';
 import { leaderboardApi } from '@/services/api';
-import { Trophy, Medal, Award, Loader2 } from 'lucide-react';
+import { Trophy, Medal, Award, Loader2, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getDailyId } from '@/lib/gameLogic';
 
@@ -14,23 +14,28 @@ interface LeaderboardProps {
 export function Leaderboard({ className }: LeaderboardProps) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [selectedMode, setSelectedMode] = useState<GameMode | 'all'>('all');
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       setIsLoading(true);
+      setHasError(false);
       // The "daily" filter shows only today's daily-challenge board.
       const mode = selectedMode === 'all' ? undefined : selectedMode;
       const challengeId = selectedMode === 'daily' ? getDailyId() : undefined;
       const response = await leaderboardApi.getLeaderboard(mode, challengeId);
       if (response.success && response.data) {
         setEntries(response.data);
+      } else {
+        setHasError(true);
       }
       setIsLoading(false);
     };
 
     fetchLeaderboard();
-  }, [selectedMode]);
+  }, [selectedMode, reloadKey]);
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -74,9 +79,18 @@ export function Leaderboard({ className }: LeaderboardProps) {
           <div className="flex items-center justify-center h-32">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
+        ) : hasError ? (
+          <div className="flex flex-col items-center justify-center h-40 gap-3 text-center px-4">
+            <p className="text-muted-foreground">Couldn't load the leaderboard.</p>
+            <p className="text-xs text-muted-foreground">The server may be waking up. Give it a moment.</p>
+            <Button variant="outline" size="sm" onClick={() => setReloadKey(k => k + 1)} className="border-primary/30">
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Try again
+            </Button>
+          </div>
         ) : entries.length === 0 ? (
           <div className="flex items-center justify-center h-32 text-muted-foreground">
-            No entries yet
+            No scores yet. Be the first.
           </div>
         ) : (
           <div className="divide-y divide-border">

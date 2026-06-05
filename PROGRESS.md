@@ -82,6 +82,13 @@ Cosmetic skins, light ads, seasons/events.
 
 ## Session log (newest first)
 
+### 2026-06-05 — /impeccable critique + fixes
+- Ran /impeccable critique: **33/40 (Good)**, detector clean, anti-patterns PASS. Snapshot in `frontend/.impeccable/critique/`. Then fixed all P2 + P3:
+  - **Trust:** pause the game when leaving the Play tab (loop no longer runs unseen); leaderboard now has an error state + "Try again" (was silently "No entries" when the backend slept); toast on score save/fail.
+  - **Clarity:** desktop READY overlay shows "Arrow keys or WASD · Space to start"; mobile nav now has visible labels (Play/Ranks/Watch/Theme) with a clearer Eye icon for Watch (was 4 unlabeled icons).
+  - **Delight:** Space/Enter to start, restart, pause, resume.
+- tsc clean, 50 tests, build OK. Verified via puppeteer: Space-start works, desktop hint visible, mobile nav fits at 360px with no overflow. Est. re-critique ~37/40.
+
 ### 2026-06-05 — /impeccable audit + fixes (harden/optimize/adapt/polish)
 - Ran /impeccable audit: **16/20 (Good)**, anti-pattern verdict PASS (not AI slop). Then fixed the findings:
   - **harden:** aria-labels on D-pad arrows; rebranded the generic 404 → neon "404 · Lost in the grid" (removed its console.error); removed stray console.error in api.ts (clearer network message); added a `sr-only` aria-live score/game-over announcer + `role="application"` board label.

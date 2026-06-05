@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { User, LogOut, Trophy, Gamepad2, Palette } from 'lucide-react';
+import { User, LogOut, Trophy, Gamepad2, Palette, Eye } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: string;
@@ -33,43 +33,42 @@ export function Header({ activeTab, onTabChange, onAuthRequest, onCustomize }: H
             </h1>
           </div>
 
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-0.5 sm:gap-1">
             <Button
               variant={activeTab === 'play' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onTabChange('play')}
-              className="font-display text-xs"
+              className="font-display h-auto flex-col gap-0.5 px-2 py-1.5 text-[9px] sm:flex-row sm:gap-2 sm:text-xs"
             >
-              <Gamepad2 className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Play</span>
+              <Gamepad2 className="w-4 h-4" />
+              <span className="leading-none">Play</span>
             </Button>
             <Button
               variant={activeTab === 'leaderboard' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onTabChange('leaderboard')}
-              className="font-display text-xs"
+              className="font-display h-auto flex-col gap-0.5 px-2 py-1.5 text-[9px] sm:flex-row sm:gap-2 sm:text-xs"
             >
-              <Trophy className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Leaderboard</span>
+              <Trophy className="w-4 h-4" />
+              <span className="leading-none">Ranks</span>
             </Button>
             <Button
               variant={activeTab === 'spectate' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onTabChange('spectate')}
-              className="font-display text-xs"
+              className="font-display h-auto flex-col gap-0.5 px-2 py-1.5 text-[9px] sm:flex-row sm:gap-2 sm:text-xs"
             >
-              <User className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Watch</span>
+              <Eye className="w-4 h-4" />
+              <span className="leading-none">Watch</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={onCustomize}
-              className="font-display text-xs text-accent hover:text-accent"
-              aria-label="Customize"
+              className="font-display h-auto flex-col gap-0.5 px-2 py-1.5 text-[9px] text-accent hover:text-accent sm:flex-row sm:gap-2 sm:text-xs"
             >
-              <Palette className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Customize</span>
+              <Palette className="w-4 h-4" />
+              <span className="leading-none">Theme</span>
             </Button>
           </nav>
 

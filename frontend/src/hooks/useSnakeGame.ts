@@ -12,6 +12,7 @@ import { useCustomization } from '@/contexts/CustomizationContext';
 import { leaderboardApi } from '@/services/api';
 import { sfx, unlockAudio } from '@/lib/sound';
 import { haptics } from '@/lib/haptics';
+import { toast } from 'sonner';
 
 interface UseSnakeGameReturn {
   gameState: GameState;
@@ -90,11 +91,15 @@ export function useSnakeGame(initialMode: GameMode = 'pass-through'): UseSnakeGa
 
       // Only logged-in users contribute to the global leaderboard.
       // Daily runs are tagged with the day so they land on the daily board.
-      if (user) {
+      if (user && finalScore > 0) {
         const challengeId = gameState.mode === 'daily' ? getDailyId() : undefined;
         leaderboardApi
           .submitScore(finalScore, gameState.mode, challengeId)
-          .catch(() => { /* network errors are non-fatal for gameplay */ });
+          .then(res => {
+            if (res.success) toast.success('Score saved to the leaderboard');
+            else toast.error("Couldn't save your score. It'll retry next run.");
+          })
+          .catch(() => toast.error("Couldn't save your score. It'll retry next run."));
       }
     }
     previousStatusRef.current = gameState.status;
@@ -242,6 +247,27 @@ export function useSnakeGame(initialMode: GameMode = 'pass-through'): UseSnakeGa
       directionQueueRef.current.push(direction);
     }
   }, [gameState.status]);
+
+  // Space / Enter to start, restart, pause, and resume (let focused buttons handle it natively).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== ' ' && e.key !== 'Enter') return;
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLButtonElement
+      ) {
+        return;
+      }
+      const status = gameState.status;
+      if (status === 'idle') { e.preventDefault(); startGame(); }
+      else if (status === 'game-over') { e.preventDefault(); resetGame(); }
+      else if (status === 'playing') { e.preventDefault(); pauseGame(); }
+      else if (status === 'paused') { e.preventDefault(); resumeGame(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [gameState.status, startGame, resetGame, pauseGame, resumeGame]);
 
   const finalScore = getFinalScore(gameState);
 

@@ -188,9 +188,12 @@ export const GameBoard = memo(({
       {/* Idle overlay */}
       {status === 'idle' && !isSpectator && (
         <div className="absolute inset-0 bg-background/60 flex items-center justify-center z-20">
-          <div className="text-center">
+          <div className="text-center px-4">
             <h2 className="font-display text-2xl text-primary text-glow-primary mb-2">READY</h2>
             <p className="text-muted-foreground">Press Start to begin</p>
+            <p className="hidden md:block text-xs text-muted-foreground mt-1">
+              Arrow keys or WASD to move · Space to start
+            </p>
           </div>
         </div>
       )}

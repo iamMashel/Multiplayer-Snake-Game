@@ -32,12 +32,13 @@ function GamePage() {
   const game = useSnakeGame('pass-through');
   const swipe = useSwipe(game.handleDirectionChange);
 
-  // Pause game when any overlay is open
+  // Pause game when any overlay is open OR the player leaves the Play tab
+  // (the loop lives in the hook, so it would otherwise keep running unseen).
   React.useEffect(() => {
-    if (menuOpen || authOpen || customizeOpen) {
+    if (menuOpen || authOpen || customizeOpen || activeTab !== 'play') {
       game.pauseGame();
     }
-  }, [menuOpen, authOpen, customizeOpen]);
+  }, [menuOpen, authOpen, customizeOpen, activeTab]);
 
   const liveMessage =
     game.gameState.status === 'game-over'
