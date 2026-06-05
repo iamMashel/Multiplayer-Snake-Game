@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { GameMode } from '@/types';
 import { cn } from '@/lib/utils';
-import { Keyboard, MousePointer2 } from 'lucide-react';
+import { Keyboard, MousePointer2, CalendarDays } from 'lucide-react';
 
 interface MenuModalProps {
   open: boolean;
@@ -57,6 +57,21 @@ export function MenuModal({
                 <div className="text-[10px] opacity-70 font-normal">Dangerous Edges (1.5x)</div>
               </Button>
             </div>
+
+            <Button
+              variant={currentMode === 'daily' ? 'default' : 'outline'}
+              onClick={() => onModeChange('daily')}
+              className={cn(
+                "w-full h-auto py-3 flex items-center justify-center gap-2",
+                currentMode === 'daily' && "neon-box"
+              )}
+            >
+              <CalendarDays className="w-4 h-4" />
+              <div className="text-left">
+                <div className="font-bold">Daily Challenge</div>
+                <div className="text-[10px] opacity-70 font-normal">Same board for everyone today · compete on the daily board</div>
+              </div>
+            </Button>
           </div>
 
           <div className="space-y-3">

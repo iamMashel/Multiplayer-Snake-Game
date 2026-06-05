@@ -5,6 +5,7 @@ import type { LeaderboardEntry, GameMode } from '@/types';
 import { leaderboardApi } from '@/services/api';
 import { Trophy, Medal, Award, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getDailyId } from '@/lib/gameLogic';
 
 interface LeaderboardProps {
   className?: string;
@@ -18,8 +19,10 @@ export function Leaderboard({ className }: LeaderboardProps) {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       setIsLoading(true);
+      // The "daily" filter shows only today's daily-challenge board.
       const mode = selectedMode === 'all' ? undefined : selectedMode;
-      const response = await leaderboardApi.getLeaderboard(mode);
+      const challengeId = selectedMode === 'daily' ? getDailyId() : undefined;
+      const response = await leaderboardApi.getLeaderboard(mode, challengeId);
       if (response.success && response.data) {
         setEntries(response.data);
       }
@@ -51,8 +54,8 @@ export function Leaderboard({ className }: LeaderboardProps) {
         </h2>
         
         {/* Mode Filter */}
-        <div className="flex gap-2 mt-3">
-          {(['all', 'pass-through', 'walls'] as const).map((mode) => (
+        <div className="flex flex-wrap gap-2 mt-3">
+          {(['all', 'pass-through', 'walls', 'daily'] as const).map((mode) => (
             <Button
               key={mode}
               variant={selectedMode === mode ? 'default' : 'ghost'}
@@ -60,7 +63,7 @@ export function Leaderboard({ className }: LeaderboardProps) {
               onClick={() => setSelectedMode(mode)}
               className="text-xs capitalize"
             >
-              {mode === 'all' ? 'All' : mode}
+              {mode === 'all' ? 'All' : mode === 'daily' ? "Today's Daily" : mode}
             </Button>
           ))}
         </div>

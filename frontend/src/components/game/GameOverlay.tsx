@@ -46,10 +46,12 @@ export function GameOverlay({ score, best = 0, mode, onOpenMenu }: GameOverlayPr
           variant="outline"
           className={cn(
             "bg-background/80 backdrop-blur-md border-primary/30 font-display text-xs h-9",
-            mode === 'walls' ? "text-destructive border-destructive/50" : "text-primary"
+            mode === 'walls' && "text-destructive border-destructive/50",
+            mode === 'daily' && "text-accent border-accent/50",
+            mode === 'pass-through' && "text-primary"
           )}
         >
-          {mode === 'pass-through' ? 'NO WALLS' : 'WALLS'}
+          {mode === 'walls' ? 'WALLS' : mode === 'daily' ? 'DAILY' : 'NO WALLS'}
         </Badge>
 
         <Button

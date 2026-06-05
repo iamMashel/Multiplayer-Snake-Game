@@ -6,6 +6,7 @@ from datetime import datetime
 class GameMode(str, Enum):
     PASS_THROUGH = 'pass-through'
     WALLS = 'walls'
+    DAILY = 'daily'
 
 class GameStatus(str, Enum):
     IDLE = 'idle'

@@ -8,12 +8,20 @@ from ..models import ApiResponse, LeaderboardEntry, GameMode
 router = APIRouter(prefix="/leaderboard", tags=["Leaderboard"])
 
 @router.get("/", response_model=ApiResponse)
-async def get_leaderboard(mode: Optional[GameMode] = None, db: Session = Depends(get_db)):
+async def get_leaderboard(
+    mode: Optional[GameMode] = None,
+    challenge_id: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
     query = db.query(Score).join(DBUser)
-    
+
     if mode:
         query = query.filter(Score.mode == mode.value)
-        
+
+    # Daily challenge: scope to a specific day's board (e.g. "2026-06-05")
+    if challenge_id:
+        query = query.filter(Score.challenge_id == challenge_id)
+
     # Get top 50 scores
     scores = query.order_by(Score.score.desc()).limit(50).all()
     
@@ -32,19 +40,21 @@ async def get_leaderboard(mode: Optional[GameMode] = None, db: Session = Depends
 
 @router.post("/", response_model=ApiResponse)
 async def submit_score(
-    score: int = Body(...), 
-    mode: GameMode = Body(...), 
+    score: int = Body(...),
+    mode: GameMode = Body(...),
     username: str = Body(...),
+    challenge_id: Optional[str] = Body(None),
     db: Session = Depends(get_db)
 ):
     user = db.query(DBUser).filter(DBUser.username == username).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-        
+
     new_score = Score(
         user_id=user.id,
         score=score,
-        mode=mode.value
+        mode=mode.value,
+        challenge_id=challenge_id,
     )
     
     db.add(new_score)

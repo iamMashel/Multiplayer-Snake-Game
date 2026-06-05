@@ -13,6 +13,10 @@ import {
   getFinalScore,
   GRID_SIZE,
   INITIAL_SPEED,
+  mulberry32,
+  buildFoodQueue,
+  getDailySeed,
+  getDailyId,
 } from '@/lib/gameLogic';
 import type { GameState, Position } from '@/types';
 
@@ -302,6 +306,67 @@ describe('Game Logic', () => {
 
       expect(getFinalScore(passState)).toBe(100);
       expect(getFinalScore(wallsState)).toBe(150);
+    });
+  });
+
+  describe('daily challenge (seeded determinism)', () => {
+    it('mulberry32 produces the same sequence for the same seed', () => {
+      const a = mulberry32(12345);
+      const b = mulberry32(12345);
+      const seqA = [a(), a(), a(), a()];
+      const seqB = [b(), b(), b(), b()];
+      expect(seqA).toEqual(seqB);
+    });
+
+    it('different seeds produce different sequences', () => {
+      const a = mulberry32(1);
+      const b = mulberry32(2);
+      expect(a()).not.toBe(b());
+    });
+
+    it('buildFoodQueue is identical for the same seed and on-grid', () => {
+      const q1 = buildFoodQueue(20260605);
+      const q2 = buildFoodQueue(20260605);
+      expect(q1).toEqual(q2);
+      for (const f of q1) {
+        expect(f.x).toBeGreaterThanOrEqual(0);
+        expect(f.x).toBeLessThan(GRID_SIZE);
+        expect(f.y).toBeGreaterThanOrEqual(0);
+        expect(f.y).toBeLessThan(GRID_SIZE);
+      }
+    });
+
+    it('createInitialState("daily") attaches a deterministic seed + food queue', () => {
+      const s1 = createInitialState('daily');
+      const s2 = createInitialState('daily');
+      expect(s1.mode).toBe('daily');
+      expect(s1.seed).toBeDefined();
+      expect(s1.foodQueue).toBeDefined();
+      // Same UTC day → identical starting board for everyone.
+      expect(s1.seed).toBe(s2.seed);
+      expect(s1.food).toEqual(s2.food);
+    });
+
+    it('daily food advances deterministically as the snake eats', () => {
+      // Place food right in front of the head so the next tick eats it.
+      const base = createInitialState('daily');
+      const head = base.snake[0];
+      const state: GameState = {
+        ...base,
+        status: 'playing',
+        direction: 'LEFT',
+        food: { x: head.x - 1, y: head.y },
+      };
+      const after1 = moveSnake(state);
+      const after2 = moveSnake({ ...state }); // same inputs → same next food
+      expect(after1.score).toBe(10);
+      expect(after1.food).toEqual(after2.food);
+    });
+
+    it('getDailySeed / getDailyId agree for a fixed UTC date', () => {
+      const d = new Date(Date.UTC(2026, 5, 5)); // 2026-06-05
+      expect(getDailySeed(d)).toBe(20260605);
+      expect(getDailyId(d)).toBe('2026-06-05');
     });
   });
 });

@@ -4,7 +4,7 @@
 > anyone (the owner, or an AI assistant resuming later) can get oriented in 2 minutes.
 > **If you're resuming work, read the "Pick up here next" section at the bottom first.**
 
-Last updated: **2026-06-05** (Phase 0 done + Phase 1A sound/juice)
+Last updated: **2026-06-05** (Phase 0 + 1A sound/juice + 1C Daily Challenge)
 
 ---
 
@@ -45,11 +45,11 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started · ⏭️ deferred
 - ⬜ Mobile swipe controls (currently on-screen arrows only)
 
 **1C. Retention & virality**
-- ⬜ Daily Challenge with shared seed + daily leaderboard
-- ⬜ Shareable score cards (image + link)
-- ⬜ Real leaderboards: global + daily + around-me, filter by mode
+- ✅ Daily Challenge with shared seed + daily leaderboard — seeded board (same for everyone each UTC day), `DAILY` mode in menu/HUD, daily scores tagged with `challenge_id`, "Today's Daily" filter in the leaderboard. Backend: `challenge_id` column (migration `a1b2c3d4e5f6`) + filter.
+- ⬜ Shareable score cards (image + link) — NEXT
+- 🚧 Real leaderboards: global + daily + mode filter ✅; "around-me" / friends ⬜
 - ⬜ PWA / installable + offline
-- ⬜ Frictionless guest play (play first, account only to save)
+- 🚧 Frictionless guest play: device personal-best + sign-up nudge done (Phase 0); full "play first" polish ⬜
 
 **1D. Product hygiene**
 - ⬜ Analytics (Plausible/PostHog)
@@ -74,6 +74,15 @@ Cosmetic skins, light ads, seasons/events.
 
 ## Session log (newest first)
 
+### 2026-06-05 — Phase 1C: Daily Challenge
+- Pushed `polish/phase0-and-juice` to GitHub.
+- **Daily Challenge shipped:** seeded deterministic board (mulberry32 PRNG + pre-rolled food queue keyed to the UTC day), so everyone gets the same board each day.
+  - gameLogic: `mulberry32`, `getDailySeed`, `getDailyId`, `buildFoodQueue`, seeded `generateFood`, daily branch in `createInitialState`/`moveSnake`; `walls` is now the only non-wrapping mode.
+  - Backend: added `DAILY` GameMode, `Score.challenge_id` column + alembic migration `a1b2c3d4e5f6`, `challenge_id` filter/param on leaderboard GET/POST. Verified end-to-end via curl.
+  - UI: "Daily Challenge" entry in MenuModal, `DAILY` HUD badge, daily score submission tagged with the day, "Today's Daily" filter in Leaderboard.
+- Tests: added 6 daily-determinism tests → **50/50 pass**; `tsc` clean; build OK; servers green.
+- NOTE: backend was restarted **with `--reload`** (the first run lacked it, so it served stale enums).
+
 ### 2026-06-05 — Phase 0 + Phase 1A (sound/juice)
 - **Phase 0 complete** (see roadmap): removed debug logs; guest personal-best + "Save my score" nudge; honest "Demo Arena / AI Demo" relabel; confirmed game-persistence backend is a stub.
 - **Phase 1A (partial):** added Web Audio sound system + mute toggle; snake-head eyes; death screen-shake; BEST readout in HUD.
@@ -90,15 +99,19 @@ Cosmetic skins, light ads, seasons/events.
 ---
 
 ## Pick up here next
-**Sequence: Phase 0 ✅ → Phase 1A juice/sound ✅(core) → ⮕ NEXT: Phase 1C (daily challenge +
-share cards) → deploy + analytics.**
+**Sequence: Phase 0 ✅ → Phase 1A juice/sound ✅ → Phase 1C Daily Challenge ✅ →
+⮕ NEXT: shareable score cards → deploy + analytics.**
 
 Immediate next actions, in order:
-1. **Phase 1C — Daily Challenge:** seed `generateFood` from a daily seed so everyone gets the
-   same food sequence; add a daily leaderboard view + "Daily" mode toggle. (Highest retention lever.)
-2. **Phase 1C — Shareable score card:** render a canvas/OG image ("I scored N 🐍") + copy-link button on game over.
-3. **Deploy + analytics:** stable public URL (Render blueprint exists) + Plausible/PostHog + OG tags.
-4. Optional quick juice still open: combo multiplier + floating "+score" popups (deferred this round).
+1. **Shareable score card:** render a canvas/OG image ("I scored N 🐍 — beat me") + copy-link
+   button on the game-over screen. Free organic growth; pairs perfectly with the Daily board.
+2. **Deploy + analytics:** stable public URL (Render blueprint exists; or split Vercel+Render) +
+   Plausible/PostHog + OG/share meta tags. This is what turns it into a real, reachable product.
+3. **Leaderboard "around-me"/friends** + maybe a "you ranked #N today" callout after a daily run.
+4. Still-open quick juice: combo multiplier + floating "+score" popups (deferred twice now).
+
+Open question for owner before deploy: hosting choice (Render blueprint vs Vercel+Render split)
+and whether to push these branches to `main` / open a PR.
 
 How to run locally:
 ```bash

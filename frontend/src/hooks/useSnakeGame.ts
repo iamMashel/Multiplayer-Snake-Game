@@ -5,6 +5,7 @@ import {
   moveSnake,
   changeDirection,
   getFinalScore,
+  getDailyId,
 } from '@/lib/gameLogic';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { leaderboardApi } from '@/services/api';
@@ -83,9 +84,11 @@ export function useSnakeGame(initialMode: GameMode = 'pass-through'): UseSnakeGa
       }
 
       // Only logged-in users contribute to the global leaderboard.
+      // Daily runs are tagged with the day so they land on the daily board.
       if (user) {
+        const challengeId = gameState.mode === 'daily' ? getDailyId() : undefined;
         leaderboardApi
-          .submitScore(finalScore, gameState.mode, user.username)
+          .submitScore(finalScore, gameState.mode, user.username, challengeId)
           .catch(() => { /* network errors are non-fatal for gameplay */ });
       }
     }

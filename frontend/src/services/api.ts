@@ -93,15 +93,23 @@ export const authApi = {
 // ============ Leaderboard API ============
 
 export const leaderboardApi = {
-  async getLeaderboard(mode?: GameMode): Promise<ApiResponse<LeaderboardEntry[]>> {
-    const query = mode ? `?mode=${mode}` : '';
+  async getLeaderboard(mode?: GameMode, challengeId?: string): Promise<ApiResponse<LeaderboardEntry[]>> {
+    const params = new URLSearchParams();
+    if (mode) params.set('mode', mode);
+    if (challengeId) params.set('challenge_id', challengeId);
+    const query = params.toString() ? `?${params.toString()}` : '';
     return request<LeaderboardEntry[]>(`/leaderboard/${query}`);
   },
 
-  async submitScore(score: number, mode: GameMode, username: string): Promise<ApiResponse<LeaderboardEntry>> {
+  async submitScore(
+    score: number,
+    mode: GameMode,
+    username: string,
+    challengeId?: string,
+  ): Promise<ApiResponse<LeaderboardEntry>> {
     return request<LeaderboardEntry>('/leaderboard/', {
       method: 'POST',
-      body: JSON.stringify({ score, mode, username }),
+      body: JSON.stringify({ score, mode, username, challenge_id: challengeId }),
     });
   },
 };

@@ -27,6 +27,8 @@ class Score(Base):
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     score = Column(Integer, nullable=False)
     mode = Column(String, nullable=False)  # Storing Enum as string
+    # Daily-challenge date (UTC, "YYYY-MM-DD") for daily runs; NULL for normal games
+    challenge_id = Column(String, nullable=True, index=True)
     played_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     user = relationship("User", back_populates="scores")

@@ -26,6 +26,71 @@ export const OPPOSITE_DIRECTIONS: Record<Direction, Direction> = {
   RIGHT: 'LEFT',
 };
 
+// ---- Daily Challenge: deterministic, seeded food ----
+
+// How many food positions to pre-roll for a daily run (a snake can't realistically eat this many).
+const FOOD_QUEUE_SIZE = 600;
+
+/** Small, fast, deterministic PRNG. Same seed → same sequence on every device. */
+export function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Numeric seed for a given UTC day, e.g. 20260605. Same for everyone on that calendar day. */
+export function getDailySeed(date: Date = new Date()): number {
+  return (
+    date.getUTCFullYear() * 10000 +
+    (date.getUTCMonth() + 1) * 100 +
+    date.getUTCDate()
+  );
+}
+
+/** Human/stable id for a given UTC day, e.g. "2026-06-05" — used as the daily leaderboard key. */
+export function getDailyId(date: Date = new Date()): string {
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(date.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/** Pre-roll a deterministic list of candidate food positions from a seed. */
+export function buildFoodQueue(seed: number): Position[] {
+  const rng = mulberry32(seed);
+  const queue: Position[] = [];
+  for (let i = 0; i < FOOD_QUEUE_SIZE; i++) {
+    queue.push({
+      x: Math.floor(rng() * GRID_SIZE),
+      y: Math.floor(rng() * GRID_SIZE),
+    });
+  }
+  return queue;
+}
+
+/** Take the next queued food not under the snake; falls back to random if exhausted. */
+function nextQueuedFood(
+  queue: Position[],
+  startIndex: number,
+  snake: Position[],
+): { food: Position; index: number } {
+  const occupied = new Set(snake.map(p => `${p.x},${p.y}`));
+  let i = startIndex;
+  while (i < queue.length) {
+    const f = queue[i];
+    i++;
+    if (!occupied.has(`${f.x},${f.y}`)) {
+      return { food: f, index: i };
+    }
+  }
+  return { food: generateFood(snake), index: i };
+}
+
 /**
  * Create initial game state
  */
@@ -33,17 +98,34 @@ export function createInitialState(mode: GameMode): GameState {
   const centerX = Math.floor(GRID_SIZE / 2);
   const centerY = Math.floor(GRID_SIZE / 2);
 
+  const snake: Position[] = [
+    { x: centerX, y: centerY },
+    { x: centerX + 1, y: centerY },
+    { x: centerX + 2, y: centerY },
+  ];
+
+  // Daily Challenge: same board for everyone on a given UTC day.
+  if (mode === 'daily') {
+    const seed = getDailySeed();
+    const foodQueue = buildFoodQueue(seed);
+    const { food, index } = nextQueuedFood(foodQueue, 0, snake);
+    return {
+      snake,
+      food,
+      direction: 'LEFT',
+      score: 0,
+      status: 'idle',
+      mode,
+      speed: INITIAL_SPEED,
+      seed,
+      foodQueue,
+      foodIndex: index,
+    };
+  }
+
   return {
-    snake: [
-      { x: centerX, y: centerY },
-      { x: centerX + 1, y: centerY },
-      { x: centerX + 2, y: centerY },
-    ],
-    food: generateFood([
-      { x: centerX, y: centerY },
-      { x: centerX + 1, y: centerY },
-      { x: centerX + 2, y: centerY },
-    ]),
+    snake,
+    food: generateFood(snake),
     direction: 'LEFT',
     score: 0,
     status: 'idle',
@@ -53,16 +135,17 @@ export function createInitialState(mode: GameMode): GameState {
 }
 
 /**
- * Generate food at random position not occupied by snake
+ * Generate food at random position not occupied by snake.
+ * Accepts an optional RNG so daily runs can be deterministic (defaults to Math.random).
  */
-export function generateFood(snake: Position[]): Position {
+export function generateFood(snake: Position[], rng: () => number = Math.random): Position {
   const occupied = new Set(snake.map(p => `${p.x},${p.y}`));
 
   let food: Position;
   do {
     food = {
-      x: Math.floor(Math.random() * GRID_SIZE),
-      y: Math.floor(Math.random() * GRID_SIZE),
+      x: Math.floor(rng() * GRID_SIZE),
+      y: Math.floor(rng() * GRID_SIZE),
     };
   } while (occupied.has(`${food.x},${food.y}`));
 
@@ -77,8 +160,8 @@ export function getNextHeadPosition(head: Position, direction: Direction, mode: 
   let newX = head.x + delta.x;
   let newY = head.y + delta.y;
 
-  if (mode === 'pass-through') {
-    // Wrap around edges
+  if (mode !== 'walls') {
+    // Wrap around edges (pass-through and daily); only 'walls' has hard edges.
     newX = (newX + GRID_SIZE) % GRID_SIZE;
     newY = (newY + GRID_SIZE) % GRID_SIZE;
   }
@@ -144,14 +227,24 @@ export function moveSnake(state: GameState): GameState {
   const ateFood = checkFoodCollision(newHead, state.food);
 
   if (ateFood) {
-    // Don't remove tail, generate new food
-    const newFood = generateFood(newSnake);
     const newSpeed = Math.max(MIN_SPEED, state.speed - SPEED_INCREMENT);
+
+    // Daily runs draw from the deterministic queue; others use random food.
+    let newFood: Position;
+    let newFoodIndex = state.foodIndex;
+    if (state.foodQueue && state.foodIndex !== undefined) {
+      const next = nextQueuedFood(state.foodQueue, state.foodIndex, newSnake);
+      newFood = next.food;
+      newFoodIndex = next.index;
+    } else {
+      newFood = generateFood(newSnake);
+    }
 
     return {
       ...state,
       snake: newSnake,
       food: newFood,
+      foodIndex: newFoodIndex,
       score: state.score + 10,
       speed: newSpeed,
     };

@@ -1,6 +1,6 @@
 // Game Types
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
-export type GameMode = 'pass-through' | 'walls';
+export type GameMode = 'pass-through' | 'walls' | 'daily';
 export type GameStatus = 'idle' | 'playing' | 'paused' | 'game-over';
 
 export interface Position {
@@ -16,6 +16,10 @@ export interface GameState {
   status: GameStatus;
   mode: GameMode;
   speed: number;
+  /** Daily Challenge only: seed + pre-rolled food queue for a deterministic board. */
+  seed?: number;
+  foodQueue?: Position[];
+  foodIndex?: number;
 }
 
 // User Types
