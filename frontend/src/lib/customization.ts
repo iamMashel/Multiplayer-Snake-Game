@@ -10,6 +10,7 @@
 export type BoardStyle = 'grid' | 'plain';
 export type SnakeSkin = 'solid' | 'gradient' | 'striped' | 'glow';
 export type FoodShape = 'classic' | 'heart';
+export type TouchControl = 'both' | 'swipe' | 'buttons';
 
 export interface CustomColors {
   snake: string; // hex
@@ -27,6 +28,7 @@ export interface Customization {
   foodBlink: boolean;
   haptics: boolean;
   sound: boolean;
+  touchControl: TouchControl;
 }
 
 /** A curated palette = a set of CSS-variable overrides ("H S% L%" values). */
@@ -116,6 +118,7 @@ export const DEFAULT_CUSTOMIZATION: Customization = {
   foodBlink: true,
   haptics: true,
   sound: true,
+  touchControl: 'both',
 };
 
 const STORAGE_KEY = 'snake_customization_v1';

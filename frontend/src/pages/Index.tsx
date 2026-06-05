@@ -10,6 +10,7 @@ import { MenuModal } from '@/components/game/MenuModal';
 import { CustomizePanel } from '@/components/game/CustomizePanel';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useSnakeGame } from '@/hooks/useSnakeGame';
+import { useSwipe } from '@/hooks/useSwipe';
 
 function GamePage() {
   const [activeTab, setActiveTab] = useState<string>('play');
@@ -18,6 +19,7 @@ function GamePage() {
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const { isAuthenticated } = useAuthContext();
   const game = useSnakeGame('pass-through');
+  const swipe = useSwipe(game.handleDirectionChange);
 
   // Pause game when any overlay is open
   React.useEffect(() => {
@@ -50,7 +52,10 @@ function GamePage() {
             </div>
 
             {/* Game Area Container - Hugs content */}
-            <div className="w-full aspect-square shrink shadow-2xl rounded-xl overflow-hidden border border-primary/20 bg-card/10 backdrop-blur-sm relative min-h-0">
+            <div
+              className="w-full aspect-square shrink shadow-2xl rounded-xl overflow-hidden border border-primary/20 bg-card/10 backdrop-blur-sm relative min-h-0 touch-none"
+              {...swipe}
+            >
               <GameBoard
                 gameState={game.gameState}
                 finalScore={game.finalScore}

@@ -42,7 +42,7 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started · ⏭️ deferred
 **1B. Depth**
 - ⬜ Power-ups / hazards (speed, slow-mo, shrink, ghost, bonus fruit, obstacles)
 - ⬜ Difficulty curve / themed arenas
-- ⬜ Mobile swipe controls (currently on-screen arrows only)
+- ✅ Mobile swipe controls: swipe-to-steer on the board (`useSwipe`, fluid mid-drag re-anchor), + a "Touch controls" preference (Both/Swipe/Buttons) in the Feel tab so players can hide the D-pad for a cleaner board. Swipe hint shown on mobile. Verified via mobile-emulated puppeteer.
 
 **1E. Customization (player ownership) — NEW, shipped 2026-06-05**
 - ✅ Theming engine: overrides the HSL CSS-var design tokens at runtime + `data-*` on `<html>`. Store `useCustomization` (`CustomizationContext`), localStorage `snake_customization_v1`, applied instantly. Files: `lib/customization.ts`, `contexts/CustomizationContext.tsx`.
@@ -81,6 +81,11 @@ Cosmetic skins, light ads, seasons/events.
 ---
 
 ## Session log (newest first)
+
+### 2026-06-05 — Mobile swipe controls
+- `useSwipe` hook: swipe-to-steer on the board (threshold + dominant-axis, re-anchors mid-drag for chained turns), wired to the same `handleDirectionChange` as keyboard/D-pad. Board wrapper gets `touch-none`.
+- Added `touchControl` preference (Both/Swipe/Buttons) to customization + Feel tab; D-pad hides in Swipe mode for a tighter board. "Swipe the board to steer" hint on mobile.
+- tsc clean, 50 tests, build OK. Verified with mobile-emulated puppeteer (layout + hint + D-pad gating; CDP swipe caused no errors).
 
 ### 2026-06-05 — Customization / player ownership (/impeccable)
 - Added PRODUCT.md + DESIGN.md (impeccable context). Built a full theming/customization system: runtime CSS-var overrides + `data-*`, localStorage store, 6 palettes + custom colors, board grid toggle, snake skins, heart-shaped blinking food (default), haptics, unified sound. New `CustomizePanel` (tabbed, live preview) reachable from the header "Customize" button.

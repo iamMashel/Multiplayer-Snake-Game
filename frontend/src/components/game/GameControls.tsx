@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import type { GameState, GameMode, Direction } from '@/types';
 import { Play, Pause, RotateCcw, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
+import { useCustomization } from '@/contexts/CustomizationContext';
 
 interface GameControlsProps {
   gameState: GameState;
@@ -21,6 +22,9 @@ export function GameControls({
   onDirectionChange,
 }: GameControlsProps) {
   const { status } = gameState;
+  const { customization } = useCustomization();
+  const showPad = customization.touchControl !== 'swipe';
+  const showSwipeHint = customization.touchControl !== 'buttons' && status === 'playing';
 
   return (
     <div className="space-y-2">
@@ -82,8 +86,15 @@ export function GameControls({
         )}
       </div>
 
+      {/* Swipe hint (mobile, when swipe is enabled) */}
+      {showSwipeHint && (
+        <p className="md:hidden text-center text-xs text-muted-foreground">
+          Swipe the board to steer
+        </p>
+      )}
+
       {/* Mobile D-Pad Controls - Larger & Centered */}
-      <div className="bg-card/50 backdrop-blur-sm rounded-xl p-2 border border-border/50 shadow-xl md:hidden">
+      <div className={`bg-card/50 backdrop-blur-sm rounded-xl p-2 border border-border/50 shadow-xl md:hidden ${showPad ? '' : 'hidden'}`}>
         <div className="grid grid-cols-3 gap-3 max-w-[240px] mx-auto">
           <div />
           <Button

@@ -19,6 +19,7 @@ import {
   type BoardStyle,
   type SnakeSkin,
   type FoodShape,
+  type TouchControl,
   type CustomColors,
 } from '@/lib/customization';
 
@@ -222,6 +223,18 @@ export function CustomizePanel({ open, onOpenChange }: CustomizePanelProps) {
 
           {/* Feel */}
           <TabsContent value="feel" className="space-y-4 pt-3">
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Touch controls (mobile)</Label>
+              <Segmented<TouchControl>
+                value={c.touchControl}
+                onChange={v => update({ touchControl: v })}
+                options={[
+                  { value: 'both', label: 'Both' },
+                  { value: 'swipe', label: 'Swipe' },
+                  { value: 'buttons', label: 'Buttons' },
+                ]}
+              />
+            </div>
             <div className="flex items-center justify-between">
               <div>
                 <Label htmlFor="haptics" className="text-sm flex items-center gap-1.5">
